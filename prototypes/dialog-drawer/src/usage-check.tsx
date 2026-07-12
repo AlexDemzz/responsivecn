@@ -72,13 +72,13 @@ export function OpenChangeDetailsNarrowing() {
   )
 }
 
-// Case 4 — mobile={{}} namespace: Drawer-only root props (snapPoints,
+// Case 4 — drawer={{}} namespace: Drawer-only root props (snapPoints,
 // swipeDirection, showSwipeHandle) plus overriding a shared prop (modal).
 export function MobileOverrides() {
   return (
     <DialogDrawer
       modal
-      mobile={{
+      drawer={{
         snapPoints: [0.5, 1],
         defaultSnapPoint: 0.5,
         swipeDirection: "down",
@@ -93,30 +93,30 @@ export function MobileOverrides() {
   )
 }
 
-// Case 5 — per-part mobile={{}}: every part exposes the real Drawer-side
-// API of its counterpart. className MERGES (cn(shared, mobile)) — the
-// shared one still applies on mobile, the mobile one wins on conflicts.
+// Case 5 — per-part drawer={{}}: every part exposes the real Drawer-side
+// API of its counterpart. className MERGES (cn(shared, drawer)) — the
+// shared one still applies on mobile, the drawer one wins on conflicts.
 export function PerPartOverrides() {
   return (
     <DialogDrawer>
       <DialogDrawerTrigger
         className="w-full"
-        mobile={{ className: "h-12", nativeButton: true }}
+        drawer={{ className: "h-12", nativeButton: true }}
       >
         Open
       </DialogDrawerTrigger>
       <DialogDrawerContent
         className="sm:max-w-lg"
         showCloseButton={false}
-        mobile={{ className: "max-h-[80dvh]" }}
+        drawer={{ className: "max-h-[80dvh]" }}
       >
-        <DialogDrawerHeader mobile={{ className: "text-center" }}>
-          <DialogDrawerTitle mobile={{ className: "text-lg" }}>
+        <DialogDrawerHeader drawer={{ className: "text-center" }}>
+          <DialogDrawerTitle drawer={{ className: "text-lg" }}>
             Title
           </DialogDrawerTitle>
         </DialogDrawerHeader>
         <DialogDrawerFooter showCloseButton>
-          <DialogDrawerClose mobile={{ className: "h-12" }}>
+          <DialogDrawerClose drawer={{ className: "h-12" }}>
             Cancel
           </DialogDrawerClose>
         </DialogDrawerFooter>
@@ -150,19 +150,19 @@ export function StateCallbacks() {
 export function InvalidUsages() {
   return (
     <>
-      {/* @ts-expect-error — snapPoints is mobile-only: must live in mobile={{}} */}
+      {/* @ts-expect-error — snapPoints is mobile-only: must live in drawer={{}} */}
       <DialogDrawer snapPoints={[0.5, 1]}>
         <DialogDrawerContent>…</DialogDrawerContent>
       </DialogDrawer>
 
-      {/* @ts-expect-error — swipeDirection typo'd value rejected inside mobile */}
-      <DialogDrawer mobile={{ swipeDirection: "diagonal" }}>
+      {/* @ts-expect-error — swipeDirection typo'd value rejected inside drawer */}
+      <DialogDrawer drawer={{ swipeDirection: "diagonal" }}>
         <DialogDrawerContent>…</DialogDrawerContent>
       </DialogDrawer>
 
       <DialogDrawer>
         {/* @ts-expect-error — showCloseButton is desktop-only, not a Drawer prop */}
-        <DialogDrawerContent mobile={{ showCloseButton: false }}>
+        <DialogDrawerContent drawer={{ showCloseButton: false }}>
           …
         </DialogDrawerContent>
       </DialogDrawer>

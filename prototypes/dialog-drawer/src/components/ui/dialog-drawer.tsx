@@ -42,22 +42,22 @@ function useDialogDrawer() {
   return context
 }
 
-// On mobile the shared className still applies; the mobile one is merged on
-// top via cn. Callbacks compose: both are resolved against the Drawer-side
-// state, then merged.
-function mergeMobileClassName<State>(
+// Below the breakpoint the shared className still applies; the drawer-side
+// one is merged on top via cn. Callbacks compose: both are resolved against
+// the Drawer-side state, then merged.
+function mergeClassNames<State>(
   shared: string | ((state: State) => string | undefined) | undefined,
-  mobile: string | ((state: State) => string | undefined) | undefined
+  override: string | ((state: State) => string | undefined) | undefined
 ): string | ((state: State) => string | undefined) | undefined {
-  if (shared == null) return mobile
-  if (mobile == null) return shared
-  if (typeof shared === "string" && typeof mobile === "string") {
-    return cn(shared, mobile)
+  if (shared == null) return override
+  if (override == null) return shared
+  if (typeof shared === "string" && typeof override === "string") {
+    return cn(shared, override)
   }
   return (state: State) =>
     cn(
       typeof shared === "function" ? shared(state) : shared,
-      typeof mobile === "function" ? mobile(state) : mobile
+      typeof override === "function" ? override(state) : override
     )
 }
 
@@ -83,15 +83,16 @@ type SharedPartProps<Props, State> = Omit<
 }
 
 // Drawer-side root overrides, applied only below the breakpoint. Matches
-// the Drawer wrapper API 1:1: the mobile-only props (snapPoints,
+// the Drawer wrapper API 1:1: the drawer-only props (snapPoints,
 // swipeDirection, showSwipeHandle, …) plus overrides of shared props
 // (e.g. modal).
-type DialogDrawerMobileProps = Omit<
+type DialogDrawerDrawerProps = Omit<
   React.ComponentProps<typeof Drawer>,
   "children"
 >
 
-// Desktop (Dialog) root props 1:1, plus the `mobile` namespace.
+// Desktop (Dialog) root props 1:1, plus the `drawer` namespace — named
+// after the mobile side of the pair (TooltipPopover gets `popover`, …).
 // `handle`/`triggerId` are unsupported: Dialog.Handle and Drawer.Handle are
 // distinct classes — a desktop handle cannot drive the mobile primitive.
 type DialogDrawerProps = Omit<
@@ -102,17 +103,17 @@ type DialogDrawerProps = Omit<
     open: boolean,
     eventDetails: DialogDrawerOpenChangeDetails
   ) => void
-  mobile?: DialogDrawerMobileProps
+  drawer?: DialogDrawerDrawerProps
 }
 
-function DialogDrawer({ mobile, children, ...props }: DialogDrawerProps) {
+function DialogDrawer({ drawer, children, ...props }: DialogDrawerProps) {
   const isMobile = useIsMobile()
   const contextValue = React.useMemo(() => ({ isMobile }), [isMobile])
 
   return (
     <DialogDrawerContext.Provider value={contextValue}>
       {isMobile ? (
-        <Drawer {...props} {...mobile}>
+        <Drawer {...props} {...drawer}>
           {children}
         </Drawer>
       ) : (
@@ -123,11 +124,11 @@ function DialogDrawer({ mobile, children, ...props }: DialogDrawerProps) {
 }
 
 type DialogDrawerTriggerProps = React.ComponentProps<typeof DialogTrigger> & {
-  mobile?: Omit<React.ComponentProps<typeof DrawerTrigger>, "children">
+  drawer?: Omit<React.ComponentProps<typeof DrawerTrigger>, "children">
 }
 
 function DialogDrawerTrigger({
-  mobile,
+  drawer,
   ...props
 }: DialogDrawerTriggerProps) {
   const { isMobile } = useDialogDrawer()
@@ -136,8 +137,8 @@ function DialogDrawerTrigger({
     return (
       <DrawerTrigger
         {...props}
-        {...mobile}
-        className={mergeMobileClassName(props.className, mobile?.className)}
+        {...drawer}
+        className={mergeClassNames(props.className, drawer?.className)}
       />
     )
   }
@@ -150,11 +151,11 @@ type DialogDrawerContentProps = SharedPartProps<
   React.ComponentProps<typeof DialogContent>,
   DialogPrimitive.Popup.State | DrawerPrimitive.Popup.State
 > & {
-  mobile?: Omit<React.ComponentProps<typeof DrawerContent>, "children">
+  drawer?: Omit<React.ComponentProps<typeof DrawerContent>, "children">
 }
 
 function DialogDrawerContent({
-  mobile,
+  drawer,
   showCloseButton,
   children,
   ...props
@@ -165,8 +166,8 @@ function DialogDrawerContent({
     return (
       <DrawerContent
         {...props}
-        {...mobile}
-        className={mergeMobileClassName(props.className, mobile?.className)}
+        {...drawer}
+        className={mergeClassNames(props.className, drawer?.className)}
       >
         {children}
       </DrawerContent>
@@ -180,18 +181,18 @@ function DialogDrawerContent({
 }
 
 type DialogDrawerHeaderProps = React.ComponentProps<typeof DialogHeader> & {
-  mobile?: Omit<React.ComponentProps<typeof DrawerHeader>, "children">
+  drawer?: Omit<React.ComponentProps<typeof DrawerHeader>, "children">
 }
 
-function DialogDrawerHeader({ mobile, ...props }: DialogDrawerHeaderProps) {
+function DialogDrawerHeader({ drawer, ...props }: DialogDrawerHeaderProps) {
   const { isMobile } = useDialogDrawer()
 
   if (isMobile) {
     return (
       <DrawerHeader
         {...props}
-        {...mobile}
-        className={cn(props.className, mobile?.className)}
+        {...drawer}
+        className={cn(props.className, drawer?.className)}
       />
     )
   }
@@ -200,11 +201,11 @@ function DialogDrawerHeader({ mobile, ...props }: DialogDrawerHeaderProps) {
 
 // `showCloseButton` is desktop-only (DrawerFooter has no close button slot).
 type DialogDrawerFooterProps = React.ComponentProps<typeof DialogFooter> & {
-  mobile?: Omit<React.ComponentProps<typeof DrawerFooter>, "children">
+  drawer?: Omit<React.ComponentProps<typeof DrawerFooter>, "children">
 }
 
 function DialogDrawerFooter({
-  mobile,
+  drawer,
   showCloseButton,
   ...props
 }: DialogDrawerFooterProps) {
@@ -214,8 +215,8 @@ function DialogDrawerFooter({
     return (
       <DrawerFooter
         {...props}
-        {...mobile}
-        className={cn(props.className, mobile?.className)}
+        {...drawer}
+        className={cn(props.className, drawer?.className)}
       />
     )
   }
@@ -223,18 +224,18 @@ function DialogDrawerFooter({
 }
 
 type DialogDrawerTitleProps = React.ComponentProps<typeof DialogTitle> & {
-  mobile?: Omit<React.ComponentProps<typeof DrawerTitle>, "children">
+  drawer?: Omit<React.ComponentProps<typeof DrawerTitle>, "children">
 }
 
-function DialogDrawerTitle({ mobile, ...props }: DialogDrawerTitleProps) {
+function DialogDrawerTitle({ drawer, ...props }: DialogDrawerTitleProps) {
   const { isMobile } = useDialogDrawer()
 
   if (isMobile) {
     return (
       <DrawerTitle
         {...props}
-        {...mobile}
-        className={mergeMobileClassName(props.className, mobile?.className)}
+        {...drawer}
+        className={mergeClassNames(props.className, drawer?.className)}
       />
     )
   }
@@ -244,11 +245,11 @@ function DialogDrawerTitle({ mobile, ...props }: DialogDrawerTitleProps) {
 type DialogDrawerDescriptionProps = React.ComponentProps<
   typeof DialogDescription
 > & {
-  mobile?: Omit<React.ComponentProps<typeof DrawerDescription>, "children">
+  drawer?: Omit<React.ComponentProps<typeof DrawerDescription>, "children">
 }
 
 function DialogDrawerDescription({
-  mobile,
+  drawer,
   ...props
 }: DialogDrawerDescriptionProps) {
   const { isMobile } = useDialogDrawer()
@@ -257,8 +258,8 @@ function DialogDrawerDescription({
     return (
       <DrawerDescription
         {...props}
-        {...mobile}
-        className={mergeMobileClassName(props.className, mobile?.className)}
+        {...drawer}
+        className={mergeClassNames(props.className, drawer?.className)}
       />
     )
   }
@@ -266,18 +267,18 @@ function DialogDrawerDescription({
 }
 
 type DialogDrawerCloseProps = React.ComponentProps<typeof DialogClose> & {
-  mobile?: Omit<React.ComponentProps<typeof DrawerClose>, "children">
+  drawer?: Omit<React.ComponentProps<typeof DrawerClose>, "children">
 }
 
-function DialogDrawerClose({ mobile, ...props }: DialogDrawerCloseProps) {
+function DialogDrawerClose({ drawer, ...props }: DialogDrawerCloseProps) {
   const { isMobile } = useDialogDrawer()
 
   if (isMobile) {
     return (
       <DrawerClose
         {...props}
-        {...mobile}
-        className={mergeMobileClassName(props.className, mobile?.className)}
+        {...drawer}
+        className={mergeClassNames(props.className, drawer?.className)}
       />
     )
   }
@@ -296,7 +297,7 @@ export {
 }
 export type {
   DialogDrawerContentProps,
-  DialogDrawerMobileProps,
+  DialogDrawerDrawerProps,
   DialogDrawerOpenChangeDetails,
   DialogDrawerProps,
 }
