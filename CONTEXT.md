@@ -8,7 +8,7 @@ A curated desktop→mobile component combination. Exactly four exist: Dialog→D
 
 ## Slug
 
-The kebab-case name of a pair: `<desktop>-<mobile>`, e.g. `dialog-drawer`. One slug names everything: the component, its source file, its registry item, and its URL path.
+The kebab-case name of a pair: `<desktop>-<mobile>`, e.g. `dialog-drawer`. One slug names everything: the component, its source file, its registry item, and its URL path. The bare slug is the Base UI item (shadcn default base); the Radix variant is the suffixed item `<slug>-radix` ([#16](https://github.com/AlexDemzz/responsivecn/issues/16)).
 
 ## Responsive component
 
@@ -24,8 +24,8 @@ Fixed at 768px, read via the standard shadcn `useIsMobile` hook (`@/hooks/use-mo
 
 ## Registry
 
-The static shadcn registry served under `/r/`: one item JSON per slug at `/r/<slug>.json`, built with `npx shadcn build` from the root `registry.json`.
+The static shadcn registry served under `/r/`: two item JSONs per slug — `/r/<slug>.json` (Base UI) and `/r/<slug>-radix.json` (Radix) — built with `npx shadcn build` from the root `registry.json`. Sources live in two hand-written parallel trees, `registry/base/` and `registry/radix/` ([#16](https://github.com/AlexDemzz/responsivecn/issues/16)).
 
 ## Catalog
 
-The flattened registry index served at `/r/registry.json` — the four items without file contents. Powers `search`/`list`/MCP and the official directory listing for `@responsivecn`.
+The flattened registry index served at `/r/registry.json` — the eight items without file contents. Powers `search`/`list`/MCP and the official directory listing for `@responsivecn`.
