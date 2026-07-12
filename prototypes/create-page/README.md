@@ -23,6 +23,13 @@ npm run dev
 
 All variants share the mock preview: fake in-frame Dialog/Sheet/Popover/Tooltip lookalikes that swap to the mobile primitive below 768px frame width.
 
-## Findings
+## Findings (HITL verdict)
 
-_To be filled with the human's verdict (HITL) — which structure wins, copy affordance form, default state, invalid-combo handling, selection-change behavior._
+**Variant C — "Playground, derived mobile" — wins**, with everything it embeds:
+
+- **Layout**: full-bleed canvas (dotted background), floating top-center toolbar, centered preview frame.
+- **Selection**: ONE select (desktop component); the mobile side is derived from the pair matrix and shown as a non-interactive "auto" chip. Invalid combos impossible by construction — the matrix is a function desktop → mobile, so a second select never made sense.
+- **Preview**: free resize via symmetric left/right drag handles + numeric px input (clamped 320–1200); width badge showing `<px> · mobile|desktop`; below 768px the mobile primitive replaces the desktop one.
+- **Selection change**: instant swap, no transition; command/URL update live.
+- **Default state**: `dialog-drawer` at **375px** — visitors see the mobile behavior (the product's raison d'être) first.
+- **Copy**: split button — primary = `npx shadcn@latest add @responsivecn/<slug>`, dropdown = pnpm dlx variant + static item URL.
