@@ -1,0 +1,131 @@
+---
+title: PopoverDrawer
+description: An anchored Popover at desktop that becomes a swipeable Drawer below 768px.
+---
+
+A drop-in replacement for the shadcn
+[Popover](https://ui.shadcn.com/docs/components/popover): at 768px and up it
+renders the Popover unchanged; below, the same children render inside a
+[Drawer](https://ui.shadcn.com/docs/components/drawer). The shared mechanism —
+breakpoint, override prop, merge rules, state loss — is documented once in the
+[Introduction](/docs).
+
+<PopoverDrawerPreview />
+
+The preview above renders the real Base UI `PopoverDrawer` — no simulation.
+Resize the window across 768px and reopen it to see the swap.
+
+## Installation
+
+<Tabs groupId="base" persist items={["Base UI", "Radix"]}>
+
+<Tab>
+
+```bash
+npx shadcn@latest add @responsivecn/popover-drawer
+```
+
+</Tab>
+
+<Tab>
+
+```bash
+npx shadcn@latest add @responsivecn/popover-drawer-radix
+```
+
+</Tab>
+
+</Tabs>
+
+Both items pull the official `popover`, `drawer` and `use-mobile` shadcn items
+as registry dependencies.
+
+## The `modal` divergence
+
+This is the one pair whose two sides disagree on modality: a Popover is
+**non-modal** by default, a Drawer is **modal** by default. `PopoverDrawer`
+does not mask that — with no `modal` prop, the same component is a
+light-dismiss anchored popover at desktop and a modal drawer with an overlay
+below 768px. That is each side's native, expected behaviour.
+
+Set `modal` explicitly and it forwards to **both** sides; use the override
+prop to target only the mobile drawer:
+
+<Tabs groupId="base" persist items={["Base UI", "Radix"]}>
+
+<Tab>
+
+```tsx
+{/* explicit modal → forwarded to both Popover and Drawer */}
+<PopoverDrawer modal>{/* … */}</PopoverDrawer>
+
+{/* native defaults on desktop, non-modal drawer on mobile only */}
+<PopoverDrawer drawer={{ modal: false }}>{/* … */}</PopoverDrawer>
+```
+
+</Tab>
+
+<Tab>
+
+```tsx
+<PopoverDrawer modal>{/* … */}</PopoverDrawer>
+```
+
+Think twice before `drawer={{ modal: false }}` on Radix: a non-modal Vaul
+drawer does **not** dismiss on outside tap — see the Radix notes below.
+
+</Tab>
+
+</Tabs>
+
+## The Footer part
+
+The shadcn Popover ships no footer, but the Drawer's action row is where
+mobile buttons belong. `PopoverDrawerFooter` fills the gap: at desktop it is a
+plain styled `<div>` (a functional fallback — never `null`, so your markup
+survives the viewport change); below the breakpoint it is the real
+`DrawerFooter`.
+
+There is no Close part on this pair — the Popover has none (it light-dismisses
+on outside click), and the drawer dismisses by swipe.
+
+## Desktop-only props
+
+- **Positioning props on the Content** — `side`, `align`, `sideOffset`,
+  `alignOffset` (and on Radix the whole Popper surface: `avoidCollisions`,
+  `collisionBoundary`, `collisionPadding`, `arrowPadding`, `sticky`,
+  `hideWhenDetached`, `updatePositionStrategy`) — are anchor positioning,
+  which is meaningless on an edge-anchored drawer. They apply at 768px and up
+  and are silently dropped below.
+- **Hover props on the Trigger** (Base UI only) — `openOnHover`, `delay`,
+  `closeDelay` — have no drawer analog; a drawer has no hover-to-open
+  semantics. Desktop-only as well.
+
+## Radix notes
+
+<Callout type="warn" title="Radix notes">
+
+- **Vaul is unmaintained.** It is the mobile side of this pair on Radix —
+  choose the `-radix` variant knowingly.
+- **`drawer={{ modal: false }}` does not light-dismiss.** A non-modal Vaul
+  drawer stays open when you tap outside it — unlike the non-modal popover it
+  replaces, which closes on outside click. The two non-modal behaviours
+  differ in kind, not just in styling.
+- **`PopoverAnchor` is omitted.** The Radix shadcn Popover exports an Anchor
+  part; this pair drops it — anchoring has no drawer analog, and the exported
+  part set stays name-identical to the Base UI item.
+
+</Callout>
+
+## Component docs
+
+The underlying components are documented upstream, not here:
+
+- **Base UI pair**: shadcn
+  [Popover](https://ui.shadcn.com/docs/components/popover) and
+  [Drawer](https://ui.shadcn.com/docs/components/drawer), built on
+  [Base UI Popover](https://base-ui.com/react/components/popover) and
+  [Base UI Drawer](https://base-ui.com/react/components/drawer).
+- **Radix pair**: shadcn Popover and Drawer (Radix flavor), built on
+  [Radix Popover](https://www.radix-ui.com/primitives/docs/components/popover)
+  and [Vaul](https://vaul.emilkowal.ski/).
