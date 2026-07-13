@@ -1,0 +1,4 @@
+{
+  "$schema": "https://fumadocs.dev/api/schema/meta.json",
+  "pages": ["index", "---Components---", "dialog-drawer"]
+}
