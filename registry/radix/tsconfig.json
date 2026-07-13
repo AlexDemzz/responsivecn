@@ -1,0 +1,44 @@
+{
+  // Standalone TS project for the radix registry tree. The app's root tsconfig
+  // EXCLUDES registry/radix: the app is Base UI and its @/ aliases point at Base
+  // UI wrappers, whereas these components import the RADIX shadcn wrappers.
+  // This project mirrors the root compilerOptions but remaps @/ to local radix
+  // harness wrappers (typecheck-only; never shipped by registry.json) so the
+  // component's real import lines (@/components/ui/dialog, …) resolve to Radix +
+  // Vaul types derived from the installed .d.ts.
+  //
+  // Typecheck:  npx tsc --noEmit -p registry/radix/tsconfig.json
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "target": "ES2022",
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+
+    "paths": {
+      // Typecheck-only Radix/Vaul shadcn wrappers (registry/radix/_harness/ui).
+      // A consumer's real @/components/ui/* wrappers are pulled by the item's
+      // bare registryDependencies (dialog, drawer) on install.
+      "@/components/ui/*": ["./_harness/ui/*"],
+      // The use-mobile hook is base-agnostic — reuse the app's shared source.
+      "@/hooks/use-mobile": ["../../src/hooks/use-mobile.ts"],
+      "@/lib/utils": ["../../src/lib/utils.ts"]
+    },
+
+    /* Bundler mode — same as the root project. */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+
+    /* Linting — same as the root project. */
+    "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  }
+}
