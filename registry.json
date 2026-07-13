@@ -16,6 +16,62 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "sheet-drawer",
+      "type": "registry:ui",
+      "title": "Sheet Drawer",
+      "description": "A responsive Sheet for Base UI: a side Sheet at desktop that becomes a swipeable Drawer below 768px. Drop-in replacement for the shadcn Sheet — desktop props 1:1 on the root and every part, plus a drawer={{}} override typed 1:1 on the Drawer API.",
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["sheet", "drawer", "use-mobile"],
+      "files": [
+        {
+          "path": "registry/base/sheet-drawer/sheet-drawer.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "popover-drawer",
+      "type": "registry:ui",
+      "title": "Popover Drawer",
+      "description": "A responsive Popover for Base UI: an anchored Popover at desktop that becomes a swipeable Drawer below 768px. Drop-in replacement for the shadcn Popover — desktop props 1:1 on the root and every part, plus a drawer={{}} override typed 1:1 on the Drawer API.",
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["popover", "drawer", "use-mobile"],
+      "files": [
+        {
+          "path": "registry/base/popover-drawer/popover-drawer.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tooltip-popover",
+      "type": "registry:ui",
+      "title": "Tooltip Popover",
+      "description": "A responsive Tooltip for Base UI: a hover Tooltip at desktop that becomes a tap-to-open Popover below 768px, because hover does not exist on touch. Drop-in replacement for the shadcn Tooltip — desktop props 1:1 on the root and every part, plus a popover={{}} override typed 1:1 on the Popover API.",
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["popover", "tooltip", "use-mobile"],
+      "files": [
+        {
+          "path": "registry/base/tooltip-popover/tooltip-popover.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "dialog-drawer-radix",
+      "type": "registry:ui",
+      "title": "Dialog Drawer (Radix)",
+      "description": "A responsive Dialog for Radix: a centered Dialog at desktop that becomes a swipeable Vaul Drawer below 768px. Drop-in replacement for the shadcn Dialog — desktop props 1:1 on the root and every part, plus a drawer={{}} override typed 1:1 on the Drawer API.",
+      "dependencies": [],
+      "registryDependencies": ["dialog", "drawer", "use-mobile"],
+      "files": [
+        {
+          "path": "registry/radix/dialog-drawer/dialog-drawer.tsx",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
