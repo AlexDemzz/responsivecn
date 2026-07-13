@@ -39,9 +39,11 @@ const serverLoader = createServerFn({ method: "GET" })
 const clientLoader = browserCollections.docs.createClientLoader({
   component({ toc, frontmatter, default: MDX }) {
     return (
-      <DocsPage toc={toc}>
+      <DocsPage toc={toc} className="max-w-3xl">
         <DocsTitle>{frontmatter.title}</DocsTitle>
-        <DocsDescription>{frontmatter.description}</DocsDescription>
+        <DocsDescription className="text-sm">
+          {frontmatter.description}
+        </DocsDescription>
         <DocsBody>
           <MDX components={useMDXComponents()} />
         </DocsBody>

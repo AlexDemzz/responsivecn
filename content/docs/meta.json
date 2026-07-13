@@ -3,9 +3,9 @@
   "pages": [
     "index",
     "---Components---",
-    "dialog-drawer",
-    "sheet-drawer",
-    "popover-drawer",
-    "tooltip-popover"
+    "base/dialog-drawer",
+    "base/sheet-drawer",
+    "base/popover-drawer",
+    "base/tooltip-popover"
   ]
 }

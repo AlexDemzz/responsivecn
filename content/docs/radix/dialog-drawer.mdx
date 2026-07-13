@@ -1,0 +1,199 @@
+---
+title: DialogDrawer
+description: A centered Dialog at desktop that becomes a swipeable Drawer below 768px.
+---
+
+<DocsBaseTabs base="radix" component="dialog-drawer" />
+
+A drop-in replacement for the shadcn
+[Dialog](https://ui.shadcn.com/docs/components/dialog): at 768px and up it
+renders the Dialog unchanged; below, the same children render inside a
+[Drawer](https://ui.shadcn.com/docs/components/drawer). The shared mechanism —
+breakpoint, override prop, merge rules, controlling `open` — is documented once
+in the [Introduction](/docs). Resize the window across 768px and reopen to see
+the swap.
+
+<ComponentDemo>
+  <ComponentDemoRender>
+    <DialogDrawerPreview />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
+
+```tsx
+import {
+  DialogDrawer,
+  DialogDrawerClose,
+  DialogDrawerContent,
+  DialogDrawerDescription,
+  DialogDrawerFooter,
+  DialogDrawerHeader,
+  DialogDrawerTitle,
+  DialogDrawerTrigger,
+} from "@/components/ui/dialog-drawer"
+
+export function EditProfile() {
+  return (
+    <DialogDrawer>
+      <DialogDrawerTrigger>Edit profile</DialogDrawerTrigger>
+      <DialogDrawerContent>
+        <DialogDrawerHeader>
+          <DialogDrawerTitle>Edit profile</DialogDrawerTitle>
+          <DialogDrawerDescription>
+            The same children render on both sides: a Dialog at 768px and up, a
+            Drawer below.
+          </DialogDrawerDescription>
+        </DialogDrawerHeader>
+        <DialogDrawerFooter>
+          <DialogDrawerClose>Cancel</DialogDrawerClose>
+        </DialogDrawerFooter>
+      </DialogDrawerContent>
+    </DialogDrawer>
+  )
+}
+```
+
+  </ComponentDemoCode>
+</ComponentDemo>
+
+## Installation
+
+<Tabs items={["Installation", "Migration"]}>
+
+<Tab value="Installation">
+
+<Steps>
+
+<Step>
+
+Configure the `@responsivecn` namespace first — see
+[Installation](/docs#installation) in the Introduction.
+
+</Step>
+
+<Step>
+
+```bash
+npx shadcn@latest add @responsivecn/dialog-drawer-radix
+```
+
+</Step>
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</Tab>
+
+<Tab value="Migration">
+
+<Steps>
+
+<Step>
+
+```bash
+npx shadcn@latest add @responsivecn/dialog-drawer-radix
+```
+
+</Step>
+
+<Step>
+
+Replace the imports — the props are the shadcn Dialog's, unchanged:
+
+```diff
+- import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog"
++ import { DialogDrawer, DialogDrawerTrigger, DialogDrawerContent } from "@/components/ui/dialog-drawer"
+```
+
+</Step>
+
+<Step>
+
+Rename the tags: every part is its shadcn Dialog counterpart with a `Drawer`
+suffix — `DialogContent` → `DialogDrawerContent`, `DialogHeader` →
+`DialogDrawerHeader`, and so on. Same props, same children.
+
+</Step>
+
+</Steps>
+
+</Tab>
+
+</Tabs>
+
+## Usage
+
+```tsx
+import {
+  DialogDrawer,
+  DialogDrawerClose,
+  DialogDrawerContent,
+  DialogDrawerDescription,
+  DialogDrawerFooter,
+  DialogDrawerHeader,
+  DialogDrawerTitle,
+  DialogDrawerTrigger,
+} from "@/components/ui/dialog-drawer"
+```
+
+```tsx
+<DialogDrawer>
+  <DialogDrawerTrigger>Edit profile</DialogDrawerTrigger>
+  <DialogDrawerContent>
+    <DialogDrawerHeader>
+      <DialogDrawerTitle>Edit profile</DialogDrawerTitle>
+      <DialogDrawerDescription>Make changes to your profile here.</DialogDrawerDescription>
+    </DialogDrawerHeader>
+    <DialogDrawerFooter>
+      <DialogDrawerClose>Cancel</DialogDrawerClose>
+    </DialogDrawerFooter>
+  </DialogDrawerContent>
+</DialogDrawer>
+```
+
+## Composition
+
+```txt
+DialogDrawer
+├── DialogDrawerTrigger
+└── DialogDrawerContent
+    ├── DialogDrawerHeader
+    │   ├── DialogDrawerTitle
+    │   └── DialogDrawerDescription
+    └── DialogDrawerFooter
+        └── DialogDrawerClose
+```
+
+## Overriding the Drawer
+
+Everything inside `drawer={{}}` is the mobile Drawer's own API, typed 1:1 on
+Vaul's own types (taken from its `.d.ts` — the Vaul docs are incomplete):
+`snapPoints`, `direction`, `dismissible`, `handleOnly`, `autoFocus`, the
+`onDrag`/`onRelease` callbacks, …
+
+```tsx
+<DialogDrawer drawer={{ snapPoints: [0.5, 1] }}>{/* … */}</DialogDrawer>
+```
+
+## Focus
+
+Radix Dialog moves focus into the popup on open; the mobile Vaul drawer
+suppresses it by default. Pass `drawer={{ autoFocus: true }}` so the drawer
+takes focus too — without it the focused trigger ends up behind `aria-hidden`
+and the console logs a focus-trap error.
+
+## Not in v1
+
+- **`showCloseButton` below the breakpoint**: the prop is desktop-only — a
+  drawer dismisses by swipe. It keeps working at 768px and up.
+
+## Learn more
+
+The underlying components are documented upstream: shadcn Dialog and Drawer
+(Radix flavor), built on
+[Radix Dialog](https://www.radix-ui.com/primitives/docs/components/dialog) and
+[Vaul](https://vaul.emilkowal.ski/).

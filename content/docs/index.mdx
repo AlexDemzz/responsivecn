@@ -14,15 +14,17 @@ A **pair** is a curated desktop→mobile combination. Each pair produces a
 **responsive component**: a drop-in replacement for the desktop component that
 renders the mobile one below the breakpoint. Four pairs exist:
 
-| Pair              | Responsive component               |
-| ----------------- | ---------------------------------- |
-| Dialog → Drawer   | [`DialogDrawer`](/docs/dialog-drawer) |
-| Sheet → Drawer    | `SheetDrawer`                      |
-| Popover → Drawer  | `PopoverDrawer`                    |
-| Tooltip → Popover | `TooltipPopover`                   |
+| Pair              | Responsive component                       |
+| ----------------- | ------------------------------------------ |
+| Dialog → Drawer   | [`DialogDrawer`](/docs/base/dialog-drawer)      |
+| Sheet → Drawer    | [`SheetDrawer`](/docs/base/sheet-drawer)        |
+| Popover → Drawer  | [`PopoverDrawer`](/docs/base/popover-drawer)    |
+| Tooltip → Popover | [`TooltipPopover`](/docs/base/tooltip-popover)  |
 
-Each pair exists on both bases of the ecosystem: the bare slug is the Base UI
-item (the shadcn default base), and the `-radix` suffix is the Radix variant.
+Each pair ships on both bases of the ecosystem — **Base UI** (shadcn's default)
+and **Radix**. Every component page has a **Base UI / Radix** tab at the top:
+the API is identical across the two, only the registry item you install
+changes.
 
 ## Installation
 
@@ -30,11 +32,8 @@ item (the shadcn default base), and the `-radix` suffix is the Radix variant.
 npx shadcn@latest add @responsivecn/dialog-drawer
 ```
 
-On a Radix project, install the `-radix` item instead:
-
-```bash
-npx shadcn@latest add @responsivecn/dialog-drawer-radix
-```
+On a Radix project, install the `-radix` item instead
+(`@responsivecn/dialog-drawer-radix`).
 
 <Callout title="Namespace resolution">
 
@@ -51,10 +50,22 @@ The install pulls the official shadcn items the component builds on
 (`dialog`, `drawer`, `use-mobile`, …) as registry dependencies — you get the
 standard building blocks, not copies of them.
 
-## The override prop
+## Migrating
 
 A responsive component takes the desktop component's props 1:1, on the root
-and on every part — migrating means changing your imports, nothing else.
+and on every part — migrating is changing your imports and the tag names,
+nothing else:
+
+```diff
+- import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog"
++ import { DialogDrawer, DialogDrawerTrigger, DialogDrawerContent } from "@/components/ui/dialog-drawer"
+```
+
+Every part is its desktop counterpart with the mobile side's name appended —
+`DialogContent` → `DialogDrawerContent`, and so on. Same props, same children.
+
+## The override prop
+
 Mobile behaviour is tuned through the **override prop**, named after the
 mobile side of the pair: `drawer={{...}}` on `DialogDrawer`, `SheetDrawer` and
 `PopoverDrawer`; `popover={{...}}` on `TooltipPopover`. It exists on the root
@@ -93,12 +104,23 @@ The **breakpoint** is fixed at 768px, read through the standard shadcn
 desktop component renders; below, the mobile one. This is a conditional
 render, not CSS: only one side is mounted at a time.
 
-<Callout type="warn" title="State loss when crossing the breakpoint">
+<Callout type="info" title="Control `open` to keep the overlay open across the breakpoint">
 
-Crossing 768px unmounts one side and mounts the other. Everything inside the
-overlay loses its internal state — uncontrolled form fields included. State
-held outside the component (a controlled `open`, lifted form values) survives.
-Design forms accordingly: lift anything you cannot afford to lose.
+Crossing 768px unmounts one side and mounts the other, so anything held _inside_
+the overlay does not carry over — an uncontrolled `open`, uncontrolled form
+fields. This is inherent to swapping two different components, not specific to
+responsivecn: the hand-rolled Dialog + Drawer recipe lifts `open` into a
+`useState` for exactly this reason.
+
+Drive `open` from your own state and it survives the swap:
+
+```tsx
+const [open, setOpen] = React.useState(false)
+
+<DialogDrawer open={open} onOpenChange={setOpen}>
+```
+
+Lift any form values you cannot afford to lose the same way.
 
 </Callout>
 
