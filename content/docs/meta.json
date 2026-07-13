@@ -1,4 +1,11 @@
 {
   "$schema": "https://fumadocs.dev/api/schema/meta.json",
-  "pages": ["index", "---Components---", "dialog-drawer"]
+  "pages": [
+    "index",
+    "---Components---",
+    "dialog-drawer",
+    "sheet-drawer",
+    "popover-drawer",
+    "tooltip-popover"
+  ]
 }
