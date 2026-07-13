@@ -1,0 +1,43 @@
+name: Registry
+
+# Blocking pre-deploy gate: a push that breaks the registry can't ship.
+# Every step is required. Items are enumerated from registry.json by the
+# scripts, so new items are covered with no changes here.
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: registry-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify registry contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Steps a–d: validate + build + view/list/add --dry-run + real smoke
+      # install of every item into throwaway Base UI and Radix projects, then
+      # tsc. This is the check that proves "add -> code that compiles".
+      - name: Verify registry (validate, build, install, typecheck)
+        run: bash scripts/verify-registry.sh
+
+      # The zero-cast type contract (registry/**/usage-check.tsx compiled by tsc).
+      - name: Typecheck the app + registry sources
+        run: npm run typecheck
+
+      # The site must build (prebuild runs `shadcn build` -> public/r).
+      - name: Build the site
+        run: npm run build

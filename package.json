@@ -15,7 +15,9 @@
     "typecheck": "tsc --noEmit && tsc --noEmit -p registry/radix/tsconfig.json",
     "deploy": "npm run build && wrangler deploy",
     "cf-typegen": "wrangler types",
-    "postinstall": "fumadocs-mdx"
+    "postinstall": "fumadocs-mdx",
+    "verify:registry": "bash scripts/verify-registry.sh",
+    "postdeploy:check": "bash scripts/postdeploy-check.sh"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
