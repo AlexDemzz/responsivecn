@@ -17,16 +17,24 @@ jobs:
   verify:
     name: Verify registry contract
     runs-on: ubuntu-latest
+    # workerd/esbuild/sharp need their build scripts (allow-listed via the
+    # package.json pnpm.onlyBuiltDependencies field); SHARP_IGNORE_GLOBAL_LIBVIPS
+    # forces sharp's prebuilt binary instead of a source build.
+    env:
+      SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
     steps:
       - uses: actions/checkout@v4
+
+      # Reads the pnpm version from package.json's packageManager field.
+      - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       # Steps a–d: validate + build + view/list/add --dry-run + real smoke
       # install of every item into throwaway Base UI and Radix projects, then
@@ -36,8 +44,8 @@ jobs:
 
       # The zero-cast type contract (registry/**/usage-check.tsx compiled by tsc).
       - name: Typecheck the app + registry sources
-        run: npm run typecheck
+        run: pnpm run typecheck
 
       # The site must build (prebuild runs `shadcn build` -> public/r).
       - name: Build the site
-        run: npm run build
+        run: pnpm run build
