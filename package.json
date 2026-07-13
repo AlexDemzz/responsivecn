@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 3000",
+    "prebuild": "shadcn build",
     "build": "vite build",
+    "registry:build": "shadcn build",
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint",

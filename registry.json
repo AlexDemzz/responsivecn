@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "responsivecn",
+  "homepage": "https://responsivecn.com",
+  "items": [
+    {
+      "name": "dialog-drawer",
+      "type": "registry:ui",
+      "title": "Dialog Drawer",
+      "description": "A responsive Dialog for Base UI: a centered Dialog at desktop that becomes a swipeable Drawer below 768px. Drop-in replacement for the shadcn Dialog — desktop props 1:1 on the root and every part, plus a drawer={{}} override typed 1:1 on the Drawer API.",
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["dialog", "drawer", "use-mobile"],
+      "files": [
+        {
+          "path": "registry/base/dialog-drawer/dialog-drawer.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    }
+  ]
+}
