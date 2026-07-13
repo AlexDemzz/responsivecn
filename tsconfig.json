@@ -8,8 +8,9 @@
   ],
   // The app lives at the repo root beside pre-existing sibling dirs
   // (prototypes/ ships its own node_modules and React types); keep them out
-  // of the app's TS project.
-  "exclude": ["node_modules", "dist", ".output", "prototypes"],
+  // of the app's TS project. registry/radix imports Radix wrappers, not the
+  // app's Base UI ones — it typechecks as its own project (registry/radix/tsconfig.json).
+  "exclude": ["node_modules", "dist", ".output", "prototypes", "registry/radix"],
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",
