@@ -72,6 +72,48 @@
           "type": "registry:ui"
         }
       ]
+    },
+    {
+      "name": "sheet-drawer-radix",
+      "type": "registry:ui",
+      "title": "Sheet Drawer (Radix)",
+      "description": "A responsive Sheet for Radix: a side Sheet at desktop that becomes a swipeable Vaul Drawer below 768px. Drop-in replacement for the shadcn Sheet — desktop props 1:1 on the root and every part, plus a drawer={{}} override typed 1:1 on the Drawer API.",
+      "dependencies": [],
+      "registryDependencies": ["sheet", "drawer", "use-mobile"],
+      "files": [
+        {
+          "path": "registry/radix/sheet-drawer/sheet-drawer.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "popover-drawer-radix",
+      "type": "registry:ui",
+      "title": "Popover Drawer (Radix)",
+      "description": "A responsive Popover for Radix: an anchored Popover at desktop that becomes a swipeable Vaul Drawer below 768px. Drop-in replacement for the shadcn Popover — desktop props 1:1 on the root and every part, plus a drawer={{}} override typed 1:1 on the Drawer API.",
+      "dependencies": [],
+      "registryDependencies": ["popover", "drawer", "use-mobile"],
+      "files": [
+        {
+          "path": "registry/radix/popover-drawer/popover-drawer.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "tooltip-popover-radix",
+      "type": "registry:ui",
+      "title": "Tooltip Popover (Radix)",
+      "description": "A responsive Tooltip for Radix: a hover Tooltip at desktop that becomes a tap-to-open Popover below 768px, because hover does not exist on touch. Drop-in replacement for the shadcn Tooltip — desktop props 1:1 on the root and every part, plus a popover={{}} override typed 1:1 on the Popover API.",
+      "dependencies": [],
+      "registryDependencies": ["tooltip", "popover", "use-mobile"],
+      "files": [
+        {
+          "path": "registry/radix/tooltip-popover/tooltip-popover.tsx",
+          "type": "registry:ui"
+        }
+      ]
     }
   ]
 }
