@@ -1,0 +1,28 @@
+---
+title: Introduction
+description: Responsive shadcn/ui overlays — desktop on top, a drawer on the thumb.
+---
+
+**responsivecn** is a shadcn registry of responsive overlay components. Each
+component is a drop-in replacement for a shadcn overlay that renders the desktop
+primitive at or above 768px and a thumb-friendly Drawer below it.
+
+## The pairs
+
+Four curated pairs cover the common desktop overlays:
+
+| Desktop | Mobile  | Component        |
+| ------- | ------- | ---------------- |
+| Dialog  | Drawer  | `DialogDrawer`   |
+| Sheet   | Drawer  | `SheetDrawer`    |
+| Popover | Drawer  | `PopoverDrawer`  |
+| Tooltip | Popover | `TooltipPopover` |
+
+## How it works
+
+The breakpoint is fixed at 768px, read through the standard shadcn `use-mobile`
+hook. Desktop props map 1:1 onto the root and every part; a mobile override prop
+named after the mobile side (`drawer={{…}}`) tunes the small-screen behaviour.
+
+This page is the walking-skeleton stub — it exists to prove docs render on the
+server and that search indexes them.
