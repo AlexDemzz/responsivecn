@@ -15,7 +15,14 @@ const config = defineConfig({
     mdx(),
     devtools(),
     tailwindcss(),
-    tanstackStart({ prerender: { enabled: true } }),
+    tanstackStart({
+      prerender: {
+        enabled: true,
+        // The landing links to /create, which ships in a later ticket (#29).
+        // Skip crawling it until the route exists; drop this filter then.
+        filter: (page) => page.path !== "/create",
+      },
+    }),
     viteReact(),
   ],
 })
