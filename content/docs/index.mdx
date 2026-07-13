@@ -1,28 +1,112 @@
 ---
 title: Introduction
-description: Responsive shadcn/ui overlays — desktop on top, a drawer on the thumb.
+description: Responsive shadcn/ui overlays — the desktop component at 768px and up, its mobile counterpart below.
 ---
 
-**responsivecn** is a shadcn registry of responsive overlay components. Each
-component is a drop-in replacement for a shadcn overlay that renders the desktop
-primitive at or above 768px and a thumb-friendly Drawer below it.
+A centered Dialog is unusable under a thumb. The shadcn docs answer with a
+recipe: combine Dialog and Drawer yourself behind a `useMediaQuery` hook.
+Every team rewrites that boilerplate, and usually badly — casted types,
+clobbered `className`s, lost callbacks, duplicated children. **responsivecn**
+ships the canonical, installable version of that recipe, following the shadcn
+conventions: open code, install from a registry, compound components.
 
-## The pairs
+A **pair** is a curated desktop→mobile combination. Each pair produces a
+**responsive component**: a drop-in replacement for the desktop component that
+renders the mobile one below the breakpoint. Four pairs exist:
 
-Four curated pairs cover the common desktop overlays:
+| Pair              | Responsive component               |
+| ----------------- | ---------------------------------- |
+| Dialog → Drawer   | [`DialogDrawer`](/docs/dialog-drawer) |
+| Sheet → Drawer    | `SheetDrawer`                      |
+| Popover → Drawer  | `PopoverDrawer`                    |
+| Tooltip → Popover | `TooltipPopover`                   |
 
-| Desktop | Mobile  | Component        |
-| ------- | ------- | ---------------- |
-| Dialog  | Drawer  | `DialogDrawer`   |
-| Sheet   | Drawer  | `SheetDrawer`    |
-| Popover | Drawer  | `PopoverDrawer`  |
-| Tooltip | Popover | `TooltipPopover` |
+Each pair exists on both bases of the ecosystem: the bare slug is the Base UI
+item (the shadcn default base), and the `-radix` suffix is the Radix variant.
+
+## Installation
+
+```bash
+npx shadcn@latest add @responsivecn/dialog-drawer
+```
+
+On a Radix project, install the `-radix` item instead:
+
+```bash
+npx shadcn@latest add @responsivecn/dialog-drawer-radix
+```
+
+<Callout title="Namespace resolution">
+
+Until the `@responsivecn` namespace resolves globally in the shadcn CLI, the
+full URL form works everywhere:
+
+```bash
+npx shadcn@latest add https://responsivecn.com/r/dialog-drawer.json
+```
+
+</Callout>
+
+The install pulls the official shadcn items the component builds on
+(`dialog`, `drawer`, `use-mobile`, …) as registry dependencies — you get the
+standard building blocks, not copies of them.
+
+## The override prop
+
+A responsive component takes the desktop component's props 1:1, on the root
+and on every part — migrating means changing your imports, nothing else.
+Mobile behaviour is tuned through the **override prop**, named after the
+mobile side of the pair: `drawer={{...}}` on `DialogDrawer`, `SheetDrawer` and
+`PopoverDrawer`; `popover={{...}}` on `TooltipPopover`. It exists on the root
+**and on every part**, and is typed 1:1 on the mobile counterpart's API — no
+casts.
+
+```tsx
+<DialogDrawer drawer={{ snapPoints: [0.5, 1] }}>
+  <DialogDrawerTrigger className="w-full">Open</DialogDrawerTrigger>
+  <DialogDrawerContent
+    className="sm:max-w-lg"
+    drawer={{ className: "max-h-[80dvh]" }}
+  >
+    …
+  </DialogDrawerContent>
+</DialogDrawer>
+```
+
+The merge rules are identical for all four pairs — only the prop name changes:
+
+- **`className` merges** — `cn(shared, mobile)`: the shared class still
+  applies below the breakpoint, the mobile one wins on conflicts.
+- **State callbacks compose** — the shared handler and the mobile handler both
+  run.
+- **Every other prop replaces** the shared value below the breakpoint.
+
+Outside the override prop, each side keeps its native defaults: an explicit
+shared prop is forwarded to both sides, and nothing is auto-mapped between the
+two APIs — a drawer opens from the bottom by default, regardless of how the
+desktop side is placed.
 
 ## How it works
 
-The breakpoint is fixed at 768px, read through the standard shadcn `use-mobile`
-hook. Desktop props map 1:1 onto the root and every part; a mobile override prop
-named after the mobile side (`drawer={{…}}`) tunes the small-screen behaviour.
+The **breakpoint** is fixed at 768px, read through the standard shadcn
+`use-mobile` hook — the same one the shadcn Sidebar uses. At 768px and up the
+desktop component renders; below, the mobile one. This is a conditional
+render, not CSS: only one side is mounted at a time.
 
-This page is the walking-skeleton stub — it exists to prove docs render on the
-server and that search indexes them.
+<Callout type="warn" title="State loss when crossing the breakpoint">
+
+Crossing 768px unmounts one side and mounts the other. Everything inside the
+overlay loses its internal state — uncontrolled form fields included. State
+held outside the component (a controlled `open`, lifted form values) survives.
+Design forms accordingly: lift anything you cannot afford to lose.
+
+</Callout>
+
+## These docs
+
+Each component has its own page in the sidebar, documenting only what is
+specific to its pair — the mechanism above is never repeated. The underlying
+components are not re-documented either: refer to the
+[shadcn/ui docs](https://ui.shadcn.com/docs/components), the
+[Base UI docs](https://base-ui.com/react/components) and the
+[Radix docs](https://www.radix-ui.com/primitives) for their APIs.
