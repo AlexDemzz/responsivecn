@@ -41,8 +41,8 @@ function useTooltipPopover() {
 }
 
 // Below the breakpoint the shared className still applies; the popover-side
-// one is merged on top via cn. Callbacks compose: both are resolved against
-// the Popover-side state, then merged.
+// one is merged on top via cn. (Root state callbacks are a separate concern —
+// they compose via composeCallbacks below.)
 function mergeClassNames<State>(
   shared: string | ((state: State) => string | undefined) | undefined,
   override: string | ((state: State) => string | undefined) | undefined
@@ -57,6 +57,20 @@ function mergeClassNames<State>(
       typeof shared === "function" ? shared(state) : shared,
       typeof override === "function" ? override(state) : override
     )
+}
+
+// Root state callbacks compose: the shared handler runs first, then the
+// mobile override (spec contract — parts keep replace semantics, roots compose).
+function composeCallbacks<Args extends unknown[]>(
+  shared: ((...args: Args) => void) | undefined,
+  override: ((...args: Args) => void) | undefined
+): ((...args: Args) => void) | undefined {
+  if (!shared) return override
+  if (!override) return shared
+  return (...args) => {
+    shared(...args)
+    override(...args)
+  }
 }
 
 // Union of both primitives' event details: assignable to both roots via
@@ -108,10 +122,29 @@ function TooltipPopover({ popover, children, ...props }: TooltipPopoverProps) {
   const isMobile = useIsMobile()
   const contextValue = React.useMemo(() => ({ isMobile }), [isMobile])
 
+  // Compose the state-lifecycle callbacks the Tooltip and Popover roots share;
+  // the remaining popover overrides keep replace semantics via {...popoverRest}.
+  const {
+    onOpenChange: overrideOnOpenChange,
+    onOpenChangeComplete: overrideOnOpenChangeComplete,
+    ...popoverRest
+  } = popover ?? {}
+
   return (
     <TooltipPopoverContext.Provider value={contextValue}>
       {isMobile ? (
-        <Popover {...props} {...popover}>
+        <Popover
+          {...props}
+          {...popoverRest}
+          onOpenChange={composeCallbacks(
+            props.onOpenChange,
+            overrideOnOpenChange
+          )}
+          onOpenChangeComplete={composeCallbacks(
+            props.onOpenChangeComplete,
+            overrideOnOpenChangeComplete
+          )}
+        >
           {children}
         </Popover>
       ) : (

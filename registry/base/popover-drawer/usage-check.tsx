@@ -212,7 +212,35 @@ export function StateCallbacks() {
   )
 }
 
-// Case 10 — things that must NOT typecheck.
+// Case 10 — composed root callbacks: a shared onOpenChange (union details,
+// reason narrowing) AND a mobile override in drawer={{}} both compile. Per the
+// contract the shared handler runs first, then the drawer override on mobile.
+export function ComposedRootCallbacks() {
+  return (
+    <PopoverDrawer
+      onOpenChange={(open, eventDetails) => {
+        if (eventDetails.reason === "swipe") {
+          console.log("shared open change", open)
+        }
+      }}
+      onOpenChangeComplete={(open) => console.log("shared complete", open)}
+      drawer={{
+        onOpenChange: (open, eventDetails) => {
+          // Drawer-side details on the mobile override — narrowed, no cast
+          if (eventDetails.reason === "swipe") {
+            console.log("drawer open change", open)
+          }
+        },
+        onOpenChangeComplete: (open) => console.log("drawer complete", open),
+      }}
+    >
+      <PopoverDrawerTrigger>Open</PopoverDrawerTrigger>
+      <PopoverDrawerContent>…</PopoverDrawerContent>
+    </PopoverDrawer>
+  )
+}
+
+// Case 11 — things that must NOT typecheck.
 export function InvalidUsages() {
   return (
     <>

@@ -134,7 +134,22 @@ export function FallbackParts() {
   )
 }
 
-// Case 7 — things that must NOT typecheck.
+// Case 7 — state callbacks COMPOSE at the root. A shared onOpenChange AND a
+// popover-side override both provided: both typecheck and BOTH run at runtime
+// (shared first, then the override). Value props like `modal` still replace.
+export function ComposedOpenChange() {
+  return (
+    <TooltipPopover
+      onOpenChange={(open) => console.log("shared", open)}
+      popover={{ onOpenChange: (open) => console.log("override", open) }}
+    >
+      <TooltipPopoverTrigger>Info</TooltipPopoverTrigger>
+      <TooltipPopoverContent>…</TooltipPopoverContent>
+    </TooltipPopover>
+  )
+}
+
+// Case 8 — things that must NOT typecheck.
 export function InvalidUsages() {
   return (
     <>

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { appName } from "@/lib/shared"
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import {
   BREAKPOINT,
   DEFAULT_PAIR,
@@ -300,23 +301,12 @@ function WidthInput({
 
 function CopySplitButton({ pair }: { pair: Pair }) {
   const [open, setOpen] = React.useState(false)
-  const [copied, setCopied] = React.useState<string | null>(null)
-  const resetTimeout = React.useRef<number | undefined>(undefined)
+  const { copied, copy } = useCopyToClipboard({ timeout: 1500 })
   const closeTimeout = React.useRef<number | undefined>(undefined)
 
   React.useEffect(() => {
-    return () => {
-      window.clearTimeout(resetTimeout.current)
-      window.clearTimeout(closeTimeout.current)
-    }
+    return () => window.clearTimeout(closeTimeout.current)
   }, [])
-
-  const copy = (key: string, text: string) => {
-    void navigator.clipboard.writeText(text).catch(() => {})
-    setCopied(key)
-    window.clearTimeout(resetTimeout.current)
-    resetTimeout.current = window.setTimeout(() => setCopied(null), 1500)
-  }
 
   const primary = npxCommand(pair.slug)
   const entries = [
@@ -337,7 +327,7 @@ function CopySplitButton({ pair }: { pair: Pair }) {
   return (
     <div className="flex">
       <Button
-        onClick={() => copy("npx", primary)}
+        onClick={() => copy(primary, "npx")}
         className="rounded-r-none font-mono text-xs"
       >
         {copied === "npx" ? (
@@ -365,7 +355,7 @@ function CopySplitButton({ pair }: { pair: Pair }) {
               key={entry.key}
               type="button"
               onClick={() => {
-                copy(entry.key, entry.value)
+                copy(entry.value, entry.key)
                 window.clearTimeout(closeTimeout.current)
                 closeTimeout.current = window.setTimeout(
                   () => setOpen(false),

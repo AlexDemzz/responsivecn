@@ -43,8 +43,8 @@ function useSheetDrawer() {
 }
 
 // Below the breakpoint the shared className still applies; the drawer-side
-// one is merged on top via cn. Callbacks compose: both are resolved against
-// the Drawer-side state, then merged.
+// one is merged on top via cn. (Root state callbacks are a separate concern —
+// they compose via composeCallbacks below.)
 function mergeClassNames<State>(
   shared: string | ((state: State) => string | undefined) | undefined,
   override: string | ((state: State) => string | undefined) | undefined
@@ -59,6 +59,20 @@ function mergeClassNames<State>(
       typeof shared === "function" ? shared(state) : shared,
       typeof override === "function" ? override(state) : override
     )
+}
+
+// Root state callbacks compose: the shared handler runs first, then the
+// mobile override (spec contract — parts keep replace semantics, roots compose).
+function composeCallbacks<Args extends unknown[]>(
+  shared: ((...args: Args) => void) | undefined,
+  override: ((...args: Args) => void) | undefined
+): ((...args: Args) => void) | undefined {
+  if (!shared) return override
+  if (!override) return shared
+  return (...args) => {
+    shared(...args)
+    override(...args)
+  }
 }
 
 // Sheet's `side` is a CSS-only Content prop; the Drawer's `swipeDirection`
@@ -156,10 +170,30 @@ function SheetDrawer({ drawer, children, ...props }: SheetDrawerProps) {
     ? SIDE_TO_SWIPE_DIRECTION[explicitSide]
     : undefined
 
+  // Compose the state-lifecycle callbacks the Sheet and Drawer roots share;
+  // the remaining drawer overrides keep replace semantics via {...drawerRest}.
+  const {
+    onOpenChange: overrideOnOpenChange,
+    onOpenChangeComplete: overrideOnOpenChangeComplete,
+    ...drawerRest
+  } = drawer ?? {}
+
   return (
     <SheetDrawerContext.Provider value={contextValue}>
       {isMobile ? (
-        <Drawer swipeDirection={swipeDirection} {...props} {...drawer}>
+        <Drawer
+          swipeDirection={swipeDirection}
+          {...props}
+          {...drawerRest}
+          onOpenChange={composeCallbacks(
+            props.onOpenChange,
+            overrideOnOpenChange
+          )}
+          onOpenChangeComplete={composeCallbacks(
+            props.onOpenChangeComplete,
+            overrideOnOpenChangeComplete
+          )}
+        >
           {children}
         </Drawer>
       ) : (

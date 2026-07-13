@@ -111,6 +111,20 @@ function findExplicitSide(
   return side
 }
 
+// State callbacks COMPOSE at the root: shared runs first, then the mobile
+// override. (Value props like `modal` still replace via the spread.)
+function composeCallbacks<Args extends unknown[]>(
+  shared: ((...args: Args) => void) | undefined,
+  override: ((...args: Args) => void) | undefined
+): ((...args: Args) => void) | undefined {
+  if (!shared) return override
+  if (!override) return shared
+  return (...args) => {
+    shared(...args)
+    override(...args)
+  }
+}
+
 function SheetDrawer({ drawer, children, ...props }: SheetDrawerProps) {
   const isMobile = useIsMobile()
   const contextValue = React.useMemo(() => ({ isMobile }), [isMobile])
@@ -122,7 +136,15 @@ function SheetDrawer({ drawer, children, ...props }: SheetDrawerProps) {
   return (
     <SheetDrawerContext.Provider value={contextValue}>
       {isMobile ? (
-        <Drawer direction={direction} {...props} {...drawer}>
+        <Drawer
+          direction={direction}
+          {...props}
+          {...drawer}
+          onOpenChange={composeCallbacks(
+            props.onOpenChange,
+            drawer?.onOpenChange
+          )}
+        >
           {children}
         </Drawer>
       ) : (

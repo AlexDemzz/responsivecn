@@ -77,8 +77,8 @@ The merge rules are identical for all four pairs — only the prop name changes:
 
 - **`className` merges** — `cn(shared, mobile)`: the shared class still
   applies below the breakpoint, the mobile one wins on conflicts.
-- **State callbacks compose** — the shared handler and the mobile handler both
-  run.
+- **State callbacks compose** — for the root's state callbacks (`onOpenChange`,
+  `onOpenChangeComplete`), the shared handler runs first, then the mobile one.
 - **Every other prop replaces** the shared value below the breakpoint.
 
 Outside the override prop, each side keeps its native defaults: an explicit

@@ -155,7 +155,35 @@ export function FallbackParts() {
   )
 }
 
-// Case 8 — things that must NOT typecheck.
+// Case 8 — composed root callbacks: a shared onOpenChange (union details,
+// reason narrowing) AND a mobile override in popover={{}} both compile. Per the
+// contract the shared handler runs first, then the popover override on mobile.
+export function ComposedRootCallbacks() {
+  return (
+    <TooltipPopover
+      onOpenChange={(open, eventDetails) => {
+        if (eventDetails.reason === "trigger-hover") {
+          console.log("shared open change", open)
+        }
+      }}
+      onOpenChangeComplete={(open) => console.log("shared complete", open)}
+      popover={{
+        onOpenChange: (open, eventDetails) => {
+          // Popover-side details on the mobile override — narrowed, no cast
+          if (eventDetails.reason === "focus-out") {
+            console.log("popover open change", open)
+          }
+        },
+        onOpenChangeComplete: (open) => console.log("popover complete", open),
+      }}
+    >
+      <TooltipPopoverTrigger>Info</TooltipPopoverTrigger>
+      <TooltipPopoverContent>…</TooltipPopoverContent>
+    </TooltipPopover>
+  )
+}
+
+// Case 9 — things that must NOT typecheck.
 export function InvalidUsages() {
   return (
     <>

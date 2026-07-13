@@ -19,8 +19,17 @@ export function isPairSlug(value: unknown): value is PairSlug {
   return PAIRS.some((pair) => pair.slug === value)
 }
 
+// Total lookup from desktop name to its pair. `satisfies` forces the record to
+// cover every DesktopName at compile time, so pairByDesktop needs no fallback.
+const PAIR_BY_DESKTOP = {
+  Dialog: PAIRS[0],
+  Sheet: PAIRS[1],
+  Popover: PAIRS[2],
+  Tooltip: PAIRS[3],
+} satisfies Record<DesktopName, Pair>
+
 export function pairByDesktop(desktop: DesktopName): Pair {
-  return PAIRS.find((pair) => pair.desktop === desktop) ?? DEFAULT_PAIR
+  return PAIR_BY_DESKTOP[desktop]
 }
 
 export const BREAKPOINT = 768

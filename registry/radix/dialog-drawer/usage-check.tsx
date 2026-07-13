@@ -153,7 +153,22 @@ export function PerPartOverrides() {
   )
 }
 
-// Case 7 — things that must NOT typecheck.
+// Case 7 — state callbacks COMPOSE at the root. A shared onOpenChange AND a
+// drawer-side override both provided: both typecheck and BOTH run at runtime
+// (shared first, then the override). Value props like `modal` still replace.
+export function ComposedOpenChange() {
+  return (
+    <DialogDrawer
+      onOpenChange={(open) => console.log("shared", open)}
+      drawer={{ onOpenChange: (open) => console.log("override", open) }}
+    >
+      <DialogDrawerTrigger>Open</DialogDrawerTrigger>
+      <DialogDrawerContent>…</DialogDrawerContent>
+    </DialogDrawer>
+  )
+}
+
+// Case 8 — things that must NOT typecheck.
 export function InvalidUsages() {
   return (
     <>

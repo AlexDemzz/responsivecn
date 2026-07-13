@@ -73,6 +73,20 @@ type TooltipPopoverProps = Omit<
   popover?: TooltipPopoverPopoverProps
 }
 
+// State callbacks COMPOSE at the root: shared runs first, then the mobile
+// override. (Value props like `modal` still replace via the spread.)
+function composeCallbacks<Args extends unknown[]>(
+  shared: ((...args: Args) => void) | undefined,
+  override: ((...args: Args) => void) | undefined
+): ((...args: Args) => void) | undefined {
+  if (!shared) return override
+  if (!override) return shared
+  return (...args) => {
+    shared(...args)
+    override(...args)
+  }
+}
+
 function TooltipPopover({ popover, children, ...props }: TooltipPopoverProps) {
   const isMobile = useIsMobile()
   const contextValue = React.useMemo(() => ({ isMobile }), [isMobile])
@@ -80,7 +94,14 @@ function TooltipPopover({ popover, children, ...props }: TooltipPopoverProps) {
   return (
     <TooltipPopoverContext.Provider value={contextValue}>
       {isMobile ? (
-        <Popover {...props} {...popover}>
+        <Popover
+          {...props}
+          {...popover}
+          onOpenChange={composeCallbacks(
+            props.onOpenChange,
+            popover?.onOpenChange
+          )}
+        >
           {children}
         </Popover>
       ) : (

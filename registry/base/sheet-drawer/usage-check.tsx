@@ -173,7 +173,35 @@ export function ExplicitSide() {
   )
 }
 
-// Case 8 — things that must NOT typecheck.
+// Case 8 — composed root callbacks: a shared onOpenChange (union details,
+// reason narrowing) AND a mobile override in drawer={{}} both compile. Per the
+// contract the shared handler runs first, then the drawer override on mobile.
+export function ComposedRootCallbacks() {
+  return (
+    <SheetDrawer
+      onOpenChange={(open, eventDetails) => {
+        if (eventDetails.reason === "swipe") {
+          console.log("shared open change", open)
+        }
+      }}
+      onOpenChangeComplete={(open) => console.log("shared complete", open)}
+      drawer={{
+        onOpenChange: (open, eventDetails) => {
+          // Drawer-side details on the mobile override — narrowed, no cast
+          if (eventDetails.reason === "swipe") {
+            console.log("drawer open change", open)
+          }
+        },
+        onOpenChangeComplete: (open) => console.log("drawer complete", open),
+      }}
+    >
+      <SheetDrawerTrigger>Open</SheetDrawerTrigger>
+      <SheetDrawerContent>…</SheetDrawerContent>
+    </SheetDrawer>
+  )
+}
+
+// Case 9 — things that must NOT typecheck.
 export function InvalidUsages() {
   return (
     <>
