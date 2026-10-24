@@ -1,20 +1,27 @@
 import * as React from "react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import {
-  ArrowLeftIcon,
+  ArrowRightIcon,
   CheckIcon,
   ChevronDownIcon,
   CopyIcon,
+  MonitorIcon,
+  SmartphoneIcon,
 } from "lucide-react"
-import { Button, buttonVariants } from "@/components/ui/button"
+
+import { Button } from "@/components/ui/button"
+import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group"
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { Mark } from "@/components/mark"
 import { cn } from "@/lib/utils"
 import { appName } from "@/lib/shared"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
+import { useElementSize } from "@/hooks/use-element-size"
 import {
   BREAKPOINT,
   DEFAULT_PAIR,
@@ -29,11 +36,12 @@ import {
   pnpmCommand,
 } from "@/components/create/pairs"
 import type { DesktopName, Pair, PairSlug } from "@/components/create/pairs"
+import { fitScale } from "@/components/create/viewport"
 
 export const Route = createFileRoute("/create")({
   head: () => ({
     meta: [
-      { title: "Create — responsivecn" },
+      { title: "Playground — responsivecn" },
       {
         name: "description",
         content:
@@ -44,130 +52,120 @@ export const Route = createFileRoute("/create")({
   component: CreatePage,
 })
 
-// Variant C "playground" (ticket #7, PR #13): the page IS the canvas. One
-// desktop select (mobile side derived from the pair matrix, shown as an
-// "auto" chip), symmetric resize handles + px input, split copy button.
+const HANDLE_ROOM = 48
+const NUDGE = 10
+const NUDGE_LARGE = 100
+
 function CreatePage() {
   const [desktop, setDesktop] = React.useState<DesktopName>(
     DEFAULT_PAIR.desktop
   )
   const [width, setWidth] = React.useState(DEFAULT_WIDTH)
   const [dragging, setDragging] = React.useState(false)
+  const [canvasRef, canvas] = useElementSize<HTMLDivElement>()
 
   const pair = pairByDesktop(desktop)
-  const onDragLeft = useDragResize(width, setWidth, setDragging, -1)
-  const onDragRight = useDragResize(width, setWidth, setDragging, 1)
+  const scale = fitScale(width, canvas.width - HANDLE_ROOM)
+  const onDragLeft = useDragResize(width, scale, setWidth, setDragging, -1)
+  const onDragRight = useDragResize(width, scale, setWidth, setDragging, 1)
+  const nudge = (delta: number) => setWidth((w) => clampWidth(w + delta))
 
   return (
-    <main className="relative flex h-svh flex-col overflow-hidden bg-background bg-[radial-gradient(circle_at_1px_1px,var(--color-border)_1px,transparent_0)] [background-size:20px_20px]">
-      <Link
-        to="/"
-        className={cn(
-          buttonVariants({ variant: "ghost", size: "sm" }),
-          "absolute top-4 left-4 z-20 border border-border bg-background/80 shadow-xs backdrop-blur"
-        )}
-      >
-        <ArrowLeftIcon />
-        {appName}
-      </Link>
+    <main className="flex h-dvh flex-col overflow-clip bg-background bg-[radial-gradient(circle_at_1px_1px,var(--color-border)_1px,transparent_0)] [background-size:20px_20px]">
+      <header className="flex flex-wrap items-center gap-2 px-3 py-3 sm:px-4">
+        <Link
+          to="/"
+          aria-label={`${appName} home`}
+          className="group/mark me-1 flex h-8 items-center gap-2 rounded-lg font-medium"
+        >
+          <Mark className="size-5" />
+          <span className="hidden sm:inline">{appName}</span>
+        </Link>
 
-      {/* floating toolbar */}
-      <div className="absolute top-4 left-1/2 z-10 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border bg-background/80 p-1.5 shadow-lg backdrop-blur">
-        <div className="relative">
-          <select
+        <div className="flex items-center gap-1.5">
+          <NativeSelect
             aria-label="Desktop component"
             value={desktop}
             onChange={(event) => setDesktop(event.target.value as DesktopName)}
-            className="h-8 appearance-none rounded-lg border border-border bg-background pr-8 pl-3 text-sm font-medium shadow-xs outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:border-input dark:bg-input/30"
           >
-            {PAIRS.map((p) => (
-              <option key={p.slug} value={p.desktop}>
-                {p.desktop}
-              </option>
+            {PAIRS.map((item) => (
+              <NativeSelectOption key={item.slug} value={item.desktop}>
+                {item.desktop}
+              </NativeSelectOption>
             ))}
-          </select>
-          <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
-        </div>
-
-        <span
-          className="flex h-8 items-center gap-1.5 rounded-lg bg-muted px-2.5 text-sm text-muted-foreground"
-          title="Derived from the pair matrix — not a choice"
-        >
-          {pair.mobile}
-          <span className="rounded-sm bg-background px-1 text-[10px] font-medium tracking-wide uppercase ring-1 ring-border">
-            auto
+          </NativeSelect>
+          <ArrowRightIcon
+            aria-hidden
+            className="size-3.5 text-muted-foreground max-sm:hidden"
+          />
+          <span
+            className="flex h-8 items-center gap-1.5 rounded-lg bg-muted ps-2.5 pe-1.5 text-sm"
+            title="Each desktop component has exactly one mobile side"
+          >
+            <span>{pair.mobile}</span>
+            <span className="rounded-sm bg-background px-1 text-xs text-muted-foreground shadow-hairline">
+              auto
+            </span>
           </span>
-        </span>
-
-        <div className="h-5 w-px bg-border" />
+        </div>
 
         <WidthInput width={width} onChange={setWidth} />
 
         <CopySplitButton pair={pair} />
-      </div>
+      </header>
 
-      {/* full-bleed canvas */}
-      <div className="flex min-h-0 flex-1 items-stretch justify-center gap-1 overflow-x-auto px-4 pt-24 pb-6 sm:px-8">
+      <div
+        ref={canvasRef}
+        className="flex min-h-0 flex-1 items-stretch justify-center px-2 pb-4 sm:px-6 sm:pb-6"
+      >
         <ResizeHandle
           side="left"
           onPointerDown={onDragLeft}
-          onNudge={(delta) => setWidth((w) => clampWidth(w - delta))}
+          onNudge={(delta) => nudge(-delta)}
         />
-        <div className="relative flex max-w-full flex-col overflow-hidden rounded-xl border bg-background shadow-sm">
-          <div className="grid h-9 shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b px-3">
-            <div className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-muted-foreground/20" />
-              <span className="size-2.5 rounded-full bg-muted-foreground/20" />
-              <span className="size-2.5 rounded-full bg-muted-foreground/20" />
-            </div>
-            <WidthBadge width={width} pair={pair} />
-          </div>
-          <PreviewFrame
-            key={pair.slug}
-            slug={pair.slug}
-            width={width}
-            dragging={dragging}
-          />
-        </div>
+        <Frame pair={pair} width={width} scale={scale} dragging={dragging} />
         <ResizeHandle
           side="right"
           onPointerDown={onDragRight}
-          onNudge={(delta) => setWidth((w) => clampWidth(w + delta))}
+          onNudge={nudge}
         />
       </div>
     </main>
   )
 }
 
-// Pointer-drag hook for the resize handles. `direction` is the sign applied
-// to the pointer delta (right edge = 1, left edge = -1); the frame is
-// centered, so the delta is doubled to keep the edge under the cursor.
+// The frame is centered, so each edge moves half the width change: the delta
+// is doubled to keep the edge under the pointer, then unscaled when the frame
+// is drawn smaller than its declared width.
 function useDragResize(
   width: number,
+  scale: number,
   setWidth: (width: number) => void,
   setDragging: (dragging: boolean) => void,
   direction: 1 | -1
 ) {
-  const start = React.useRef({ x: 0, w: 0 })
-
   return React.useCallback(
-    (event: React.PointerEvent) => {
+    (event: React.PointerEvent<HTMLElement>) => {
       event.preventDefault()
-      start.current = { x: event.clientX, w: width }
+      const handle = event.currentTarget
+      handle.setPointerCapture(event.pointerId)
+      const startX = event.clientX
       setDragging(true)
       const onMove = (moveEvent: PointerEvent) => {
-        const dx = (moveEvent.clientX - start.current.x) * direction * 2
-        setWidth(clampWidth(start.current.w + dx))
+        const dx = ((moveEvent.clientX - startX) * direction * 2) / scale
+        setWidth(clampWidth(width + dx))
       }
       const onUp = () => {
         setDragging(false)
-        window.removeEventListener("pointermove", onMove)
-        window.removeEventListener("pointerup", onUp)
+        handle.removeEventListener("pointermove", onMove)
+        handle.removeEventListener("pointerup", onUp)
+        handle.removeEventListener("pointercancel", onUp)
       }
-      window.addEventListener("pointermove", onMove)
-      window.addEventListener("pointerup", onUp)
+      handle.addEventListener("pointermove", onMove)
+      handle.addEventListener("pointerup", onUp)
+      handle.addEventListener("pointercancel", onUp)
     },
-    [width, setWidth, setDragging, direction]
+    [width, scale, setWidth, setDragging, direction]
   )
 }
 
@@ -177,58 +175,97 @@ function ResizeHandle({
   onNudge,
 }: {
   side: "left" | "right"
-  onPointerDown: (event: React.PointerEvent) => void
+  onPointerDown: (event: React.PointerEvent<HTMLElement>) => void
   onNudge: (delta: number) => void
 }) {
   return (
     <button
       type="button"
-      aria-label={`Resize canvas (${side} edge)`}
-      title="Drag to resize"
+      aria-label={`Resize the canvas from its ${side} edge`}
+      title="Drag, or use the arrow keys (Shift for 100px)"
       onPointerDown={(event) => {
-        // preventDefault (in the drag hook) suppresses click-focus — restore
-        // it so arrow-key resizing works right after grabbing the handle.
+        // preventDefault in the drag suppresses click focus; restore it so
+        // the arrow keys work right after grabbing the handle.
         event.currentTarget.focus()
         onPointerDown(event)
       }}
       onKeyDown={(event) => {
         if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return
         event.preventDefault()
-        onNudge(event.key === "ArrowLeft" ? -10 : 10)
+        const step = event.shiftKey ? NUDGE_LARGE : NUDGE
+        onNudge(event.key === "ArrowLeft" ? -step : step)
       }}
-      className="group flex w-5 shrink-0 cursor-ew-resize touch-none items-center justify-center self-stretch rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="group flex w-6 shrink-0 cursor-ew-resize touch-none items-center justify-center rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
     >
-      <span className="h-12 w-1.5 rounded-full bg-muted-foreground/30 transition-colors group-hover:bg-muted-foreground/60 group-active:bg-muted-foreground/80" />
+      <span className="h-12 w-1.5 rounded-full bg-muted-foreground/30 transition-colors duration-150 ease-out group-active:bg-muted-foreground/80 can-hover:group-hover:bg-muted-foreground/60" />
     </button>
   )
 }
 
-function WidthBadge({ width, pair }: { width: number; pair: Pair }) {
+// The live preview: an iframe whose own window is `width` px wide, so the
+// registry components' use-mobile sees the canvas width and swaps at 768px.
+// When the canvas has less room than that, zoom draws it smaller without
+// changing the width its window reports.
+function Frame({
+  pair,
+  width,
+  scale,
+  dragging,
+}: {
+  pair: Pair
+  width: number
+  scale: number
+  dragging: boolean
+}) {
+  const [bodyRef, body] = useElementSize<HTMLDivElement>()
   const isMobile = width < BREAKPOINT
+  const SideIcon = isMobile ? SmartphoneIcon : MonitorIcon
+
   return (
-    <span className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-0.5 font-mono text-[11px] text-muted-foreground">
-      <span
-        className={cn(
-          "size-1.5 rounded-full",
-          isMobile ? "bg-amber-500" : "bg-sky-500"
-        )}
-      />
-      {width}px · {isMobile ? pair.mobile : pair.desktop}
-    </span>
+    <div
+      className="flex max-w-full min-w-0 flex-col overflow-clip rounded-2xl border bg-background"
+      style={{ width: Math.round(width * scale) + 2 }}
+    >
+      <div className="flex h-9 shrink-0 items-center justify-center gap-1.5 border-b px-3 text-xs text-muted-foreground">
+        <SideIcon aria-hidden className="size-3.5" />
+        <span className="truncate">
+          <span className="text-foreground tabular-nums">{width}px</span>{" "}
+          renders the {isMobile ? pair.mobile : pair.desktop}
+          {scale < 1 ? (
+            <span className="tabular-nums">
+              {" "}
+              · shown at {Math.round(scale * 100)}%
+            </span>
+          ) : null}
+        </span>
+      </div>
+      <div ref={bodyRef} className="relative min-h-0 flex-1">
+        {body.height > 0 ? (
+          <PreviewFrame
+            key={pair.slug}
+            slug={pair.slug}
+            width={width}
+            height={Math.round(body.height / scale)}
+            scale={scale}
+            dragging={dragging}
+          />
+        ) : null}
+      </div>
+    </div>
   )
 }
 
-// The live preview: an iframe whose window width follows the canvas, so the
-// registry components' use-mobile (window.matchMedia) sees the canvas width
-// and swaps instantly at 768px. Width lives on the iframe itself — the
-// declared px IS the preview viewport, borders sit outside of it.
 function PreviewFrame({
   slug,
   width,
+  height,
+  scale,
   dragging,
 }: {
   slug: PairSlug
   width: number
+  height: number
+  scale: number
   dragging: boolean
 }) {
   const [loaded, setLoaded] = React.useState(false)
@@ -237,9 +274,9 @@ function PreviewFrame({
       src={`/preview?pair=${slug}`}
       title={`${slug} live preview`}
       onLoad={() => setLoaded(true)}
-      style={{ width }}
+      style={{ width, height, zoom: scale }}
       className={cn(
-        "min-h-0 flex-1 border-0 transition-opacity duration-150 ease-out",
+        "absolute start-0 top-0 border-0 transition-opacity duration-200 ease-out",
         loaded ? "opacity-100" : "opacity-0",
         // The iframe must not swallow pointer events while dragging.
         dragging && "pointer-events-none"
@@ -255,35 +292,28 @@ function WidthInput({
   width: number
   onChange: (width: number) => void
 }) {
-  const [value, setValue] = React.useState(String(width))
-
-  // Keep the field in sync when the drag handles change the width.
-  React.useEffect(() => {
-    setValue(String(width))
-  }, [width])
+  const [draft, setDraft] = React.useState<string | null>(null)
 
   const commit = () => {
-    const parsed = Number(value)
-    const next =
-      Number.isFinite(parsed) && value !== "" ? clampWidth(parsed) : width
-    setValue(String(next))
-    onChange(next)
+    if (draft === null) return
+    const parsed = Number(draft)
+    if (draft !== "" && Number.isFinite(parsed)) onChange(clampWidth(parsed))
+    setDraft(null)
   }
 
   return (
-    <label className="flex h-8 items-center gap-1 rounded-lg border border-border bg-background px-2.5 font-mono text-xs text-muted-foreground shadow-xs focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 dark:border-input dark:bg-input/30">
+    <label className="flex h-8 items-center gap-1 rounded-lg border border-input bg-background ps-2.5 pe-2 font-mono text-sm text-muted-foreground focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 dark:bg-input/30">
       <input
         type="number"
         inputMode="numeric"
         aria-label="Canvas width in pixels"
         min={MIN_WIDTH}
         max={MAX_WIDTH}
-        value={value}
+        value={draft ?? String(width)}
         onChange={(event) => {
           const next = event.target.value
-          setValue(next)
+          setDraft(next)
           const parsed = Number(next)
-          // Apply instantly while the value is already in range; clamp on commit.
           if (parsed >= MIN_WIDTH && parsed <= MAX_WIDTH) {
             onChange(Math.round(parsed))
           }
@@ -292,21 +322,21 @@ function WidthInput({
         onKeyDown={(event) => {
           if (event.key === "Enter") commit()
         }}
-        className="w-12 [appearance:textfield] bg-transparent text-right text-sm text-foreground outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        className="w-12 [appearance:textfield] bg-transparent text-end text-foreground tabular-nums outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
       />
       px
     </label>
   )
 }
 
+const CLOSE_AFTER_COPY = 600
+
 function CopySplitButton({ pair }: { pair: Pair }) {
   const [open, setOpen] = React.useState(false)
   const { copied, copy } = useCopyToClipboard({ timeout: 1500 })
   const closeTimeout = React.useRef<number | undefined>(undefined)
 
-  React.useEffect(() => {
-    return () => window.clearTimeout(closeTimeout.current)
-  }, [])
+  React.useEffect(() => () => window.clearTimeout(closeTimeout.current), [])
 
   const primary = npxCommand(pair.slug)
   const entries = [
@@ -315,31 +345,30 @@ function CopySplitButton({ pair }: { pair: Pair }) {
   ]
 
   return (
-    <div className="flex">
+    <ButtonGroup className="min-w-0 max-sm:w-full sm:ms-auto">
       <Button
         onClick={() => copy(primary, "npx")}
-        className="rounded-r-none font-mono text-xs"
+        aria-label={`Copy ${primary}`}
+        className="min-w-0 flex-1 justify-start font-mono"
       >
         {copied === "npx" ? (
-          <CheckIcon className="size-3.5" />
+          <CheckIcon data-icon="inline-start" />
         ) : (
-          <CopyIcon className="size-3.5" />
+          <CopyIcon data-icon="inline-start" />
         )}
-        {primary}
+        <span className="truncate">{primary}</span>
       </Button>
+      <ButtonGroupSeparator />
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
-          render={
-            <Button
-              size="icon"
-              aria-label="More install options"
-              className="rounded-l-none border-l border-primary-foreground/20"
-            />
-          }
+          render={<Button size="icon" aria-label="More install options" />}
         >
-          <ChevronDownIcon className="size-3.5" />
+          <ChevronDownIcon />
         </PopoverTrigger>
-        <PopoverContent align="end" sideOffset={8} className="w-80 gap-0 p-1">
+        <PopoverContent
+          align="end"
+          className="w-80 max-w-[calc(100vw-2rem)] gap-0 p-1"
+        >
           {entries.map((entry) => (
             <button
               key={entry.key}
@@ -349,24 +378,27 @@ function CopySplitButton({ pair }: { pair: Pair }) {
                 window.clearTimeout(closeTimeout.current)
                 closeTimeout.current = window.setTimeout(
                   () => setOpen(false),
-                  600
+                  CLOSE_AFTER_COPY
                 )
               }}
-              className="flex w-full flex-col items-start gap-0.5 rounded-md px-2.5 py-2 text-left outline-none hover:bg-muted focus-visible:bg-muted"
+              className="flex w-full flex-col items-start gap-0.5 rounded-md px-2.5 py-2 text-start outline-none focus-visible:bg-muted can-hover:hover:bg-muted"
             >
-              <span className="flex w-full items-center justify-between text-xs font-medium">
+              <span className="flex w-full items-center justify-between text-sm font-medium">
                 {entry.label}
-                {copied === entry.key && (
-                  <CheckIcon className="size-3 text-muted-foreground" />
-                )}
+                {copied === entry.key ? (
+                  <CheckIcon
+                    aria-label="Copied"
+                    className="size-3.5 text-muted-foreground"
+                  />
+                ) : null}
               </span>
-              <span className="w-full truncate font-mono text-[11px] text-muted-foreground">
+              <span className="w-full truncate font-mono text-xs text-muted-foreground">
                 {entry.value}
               </span>
             </button>
           ))}
         </PopoverContent>
       </Popover>
-    </div>
+    </ButtonGroup>
   )
 }

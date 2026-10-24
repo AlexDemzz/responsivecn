@@ -19,6 +19,19 @@ export function isPairSlug(value: unknown): value is PairSlug {
   return PAIRS.some((pair) => pair.slug === value)
 }
 
+export type PreviewSearch = { pair: PairSlug; open: boolean }
+
+// The /preview iframe's search params. `open` mounts the demo open, so the
+// landing stage shows the overlay itself rather than its trigger.
+export function parsePreviewSearch(
+  search: Record<string, unknown>
+): PreviewSearch {
+  return {
+    pair: isPairSlug(search.pair) ? search.pair : DEFAULT_PAIR.slug,
+    open: search.open === true,
+  }
+}
+
 // Total lookup from desktop name to its pair. `satisfies` forces the record to
 // cover every DesktopName at compile time, so pairByDesktop needs no fallback.
 const PAIR_BY_DESKTOP = {

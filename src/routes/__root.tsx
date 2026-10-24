@@ -16,6 +16,10 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
+        name: "color-scheme",
+        content: "light dark",
+      },
+      {
         title: "responsivecn",
       },
     ],
@@ -42,7 +46,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="flex min-h-svh flex-col">
-        <RootProvider>{children}</RootProvider>
+        {/* Dark mode follows the system: no toggle, no hotkey. */}
+        <RootProvider theme={{ hotKey: false }}>{children}</RootProvider>
         <TanStackDevtools
           config={{
             position: "bottom-right",

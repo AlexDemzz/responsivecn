@@ -1,3 +1,4 @@
+import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import {
@@ -42,6 +43,23 @@ import type { PairSlug } from "./pairs"
 // Drawer doesn't pad its children while the desktop counterparts do, and
 // `md:` inside the iframe flips at the exact same 768px as the swap.
 
+type DemoProps = { open: boolean }
+
+// A demo mounted open must not pull focus into the iframe on page load; the
+// first time it closes, focus goes back to moving into the popup as usual.
+function useOpenOnLoad(open: boolean) {
+  const [quiet, setQuiet] = React.useState(open)
+  return {
+    root: {
+      defaultOpen: open,
+      onOpenChange: (next: boolean) => {
+        if (!next) setQuiet(false)
+      },
+    },
+    initialFocus: quiet ? false : undefined,
+  }
+}
+
 function Field({
   id,
   label,
@@ -65,13 +83,15 @@ function Field({
   )
 }
 
-function DialogDrawerDemo() {
+function DialogDrawerDemo({ open }: DemoProps) {
+  const load = useOpenOnLoad(open)
   return (
-    <DialogDrawer>
+    <DialogDrawer {...load.root}>
       <DialogDrawerTrigger render={<Button variant="outline" />}>
         Edit profile
       </DialogDrawerTrigger>
       <DialogDrawerContent
+        initialFocus={load.initialFocus}
         className="sm:max-w-sm"
         drawer={{ className: "max-w-none" }}
       >
@@ -98,13 +118,14 @@ function DialogDrawerDemo() {
   )
 }
 
-function SheetDrawerDemo() {
+function SheetDrawerDemo({ open }: DemoProps) {
+  const load = useOpenOnLoad(open)
   return (
-    <SheetDrawer>
+    <SheetDrawer {...load.root}>
       <SheetDrawerTrigger render={<Button variant="outline" />}>
         Open sheet
       </SheetDrawerTrigger>
-      <SheetDrawerContent side="right">
+      <SheetDrawerContent initialFocus={load.initialFocus} side="right">
         <SheetDrawerHeader>
           <SheetDrawerTitle>Edit profile</SheetDrawerTitle>
           <SheetDrawerDescription>
@@ -127,13 +148,14 @@ function SheetDrawerDemo() {
   )
 }
 
-function PopoverDrawerDemo() {
+function PopoverDrawerDemo({ open }: DemoProps) {
+  const load = useOpenOnLoad(open)
   return (
-    <PopoverDrawer>
+    <PopoverDrawer {...load.root}>
       <PopoverDrawerTrigger render={<Button variant="outline" />}>
         Open popover
       </PopoverDrawerTrigger>
-      <PopoverDrawerContent className="w-80">
+      <PopoverDrawerContent initialFocus={load.initialFocus} className="w-80">
         <PopoverDrawerHeader>
           <PopoverDrawerTitle>Dimensions</PopoverDrawerTitle>
           <PopoverDrawerDescription>
@@ -167,10 +189,11 @@ function PopoverDrawerDemo() {
   )
 }
 
-function TooltipPopoverDemo() {
+function TooltipPopoverDemo({ open }: DemoProps) {
+  const load = useOpenOnLoad(open)
   return (
     <TooltipProvider>
-      <TooltipPopover>
+      <TooltipPopover {...load.root}>
         <TooltipPopoverTrigger render={<Button variant="outline" />}>
           Hover or tap
         </TooltipPopoverTrigger>
@@ -182,14 +205,14 @@ function TooltipPopoverDemo() {
   )
 }
 
-const DEMOS: Record<PairSlug, () => React.JSX.Element> = {
+const DEMOS: Record<PairSlug, (props: DemoProps) => React.JSX.Element> = {
   "dialog-drawer": DialogDrawerDemo,
   "sheet-drawer": SheetDrawerDemo,
   "popover-drawer": PopoverDrawerDemo,
   "tooltip-popover": TooltipPopoverDemo,
 }
 
-export function PairDemo({ slug }: { slug: PairSlug }) {
+export function PairDemo({ slug, open }: { slug: PairSlug; open: boolean }) {
   const Demo = DEMOS[slug]
-  return <Demo />
+  return <Demo open={open} />
 }
