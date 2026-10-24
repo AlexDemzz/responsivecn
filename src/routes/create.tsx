@@ -19,6 +19,7 @@ import { Mark } from "@/components/mark"
 import { CopyStateIcon, CopyStatus } from "@/components/copy-state-icon"
 import { cn } from "@/lib/utils"
 import { appName } from "@/lib/shared"
+import { createSeo, pageHead } from "@/lib/seo"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { useElementSize } from "@/hooks/use-element-size"
 import {
@@ -38,16 +39,7 @@ import type { DesktopName, Pair, PairSlug } from "@/components/create/pairs"
 import { fitScale } from "@/components/create/viewport"
 
 export const Route = createFileRoute("/create")({
-  head: () => ({
-    meta: [
-      { title: "Playground — responsivecn" },
-      {
-        name: "description",
-        content:
-          "Preview every responsive pair live: resize the canvas across 768px and watch the desktop component swap to its mobile counterpart.",
-      },
-    ],
-  }),
+  head: () => pageHead(createSeo),
   component: CreatePage,
 })
 

@@ -1,0 +1,61 @@
+import { PAIRS, itemUrl } from "@/components/create/pairs"
+import { appName, githubUrl, siteUrl } from "@/lib/shared"
+import { createSeo, homeSeo, markdownUrl } from "@/lib/seo"
+
+export type DocsEntry = { path: string; title: string; description: string }
+
+// https://llmstxt.org: an H1, a blockquote summary, then H2 sections of links.
+export function llmsTxt(docs: DocsEntry[]): string {
+  return [
+    `# ${appName}`,
+    "",
+    `> ${homeSeo.description}`,
+    "",
+    "Each component is a drop-in replacement for the desktop shadcn/ui component: same props, same parts. Migrating means changing the import and renaming the tags. Below 768px (the shadcn `useIsMobile` breakpoint) the same children render in the mobile component. Mobile-only props go through the override prop (`drawer={{...}}` or `popover={{...}}`).",
+    "",
+    "## When to use",
+    "",
+    "- A shadcn/ui project needs a Dialog, Sheet or Popover that becomes a bottom Drawer on phones, or a Tooltip that becomes a tap-to-open Popover on touch screens.",
+    "- The project uses the Base UI or Radix base of shadcn/ui. React Aria is not supported.",
+    "- Not for a custom breakpoint: it is fixed at 768px.",
+    "",
+    "## Install",
+    "",
+    "Install a component with the shadcn CLI, from the `@responsivecn` namespace or by URL. It adds one file to `components/ui/` and the shadcn components it builds on.",
+    "",
+    "```bash",
+    "npx shadcn@latest add @responsivecn/dialog-drawer",
+    `npx shadcn@latest add ${itemUrl("dialog-drawer")}`,
+    "```",
+    "",
+    "## Docs",
+    "",
+    ...docs.map(
+      (page) =>
+        `- [${page.title}](${markdownUrl(page.path)}): ${page.description}`
+    ),
+    "",
+    "## Registry",
+    "",
+    `- [Catalog](${siteUrl}/r/registry.json): every item of the shadcn registry, without file contents.`,
+    ...PAIRS.map(
+      (pair) =>
+        `- [${pair.slug}](${itemUrl(pair.slug)}): ${pair.desktop} on desktop, ${pair.mobile} on mobile.`
+    ),
+    "",
+    "## Optional",
+    "",
+    `- [Playground](${markdownUrl(createSeo.path)}): ${createSeo.description}`,
+    `- [Full docs](${siteUrl}/llms-full.txt): every docs page in one Markdown file.`,
+    `- [Source code](${githubUrl}): the registry and this site.`,
+    "",
+  ].join("\n")
+}
+
+export function llmsFullTxt(
+  pages: { url: string; markdown: string }[]
+): string {
+  return pages
+    .map((page) => `${page.markdown.trim()}\n\nSource: ${page.url}\n`)
+    .join("\n---\n\n")
+}

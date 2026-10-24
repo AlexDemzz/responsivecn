@@ -10,7 +10,7 @@ export const Route = createFileRoute("/preview")({
   validateSearch: parsePreviewSearch,
   head: () => ({
     meta: [
-      { title: "Preview — responsivecn" },
+      { title: "Preview | responsivecn" },
       { name: "robots", content: "noindex" },
     ],
   }),

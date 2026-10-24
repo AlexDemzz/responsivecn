@@ -10,20 +10,12 @@ import { DEFAULT_PAIR, PAIRS, npxCommand } from "@/components/create/pairs"
 import type { PairSlug } from "@/components/create/pairs"
 import type { StageMode } from "@/components/create/viewport"
 import { appName, githubUrl } from "@/lib/shared"
+import { homeJsonLd, homeSeo, pageHead } from "@/lib/seo"
 import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/")({
   component: Home,
-  head: () => ({
-    meta: [
-      { title: "responsivecn — responsive shadcn/ui overlays" },
-      {
-        name: "description",
-        content:
-          "shadcn/ui overlays that become their mobile counterpart below 768px: Dialog to Drawer, Sheet to Drawer, Popover to Drawer, Tooltip to Popover. A drop-in for the component you already use, on Base UI or Radix.",
-      },
-    ],
-  }),
+  head: () => pageHead({ ...homeSeo, jsonLd: homeJsonLd() }),
 })
 
 const BASES = [

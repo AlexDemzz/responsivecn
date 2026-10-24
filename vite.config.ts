@@ -19,6 +19,11 @@ const config = defineConfig({
       prerender: {
         enabled: true,
       },
+      pages: [
+        { path: "/sitemap.xml" },
+        { path: "/llms.txt" },
+        { path: "/llms-full.txt" },
+      ],
     }),
     viteReact(),
   ],

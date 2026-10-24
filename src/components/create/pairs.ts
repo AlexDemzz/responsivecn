@@ -1,3 +1,5 @@
+import { siteUrl } from "@/lib/shared"
+
 // Pair matrix and install-command strings for the /create playground.
 // The matrix is a function: each desktop component has exactly one valid
 // mobile side (CONTEXT.md), so the UI only ever asks for the desktop one.
@@ -54,8 +56,6 @@ export function clampWidth(width: number): number {
   return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, Math.round(width)))
 }
 
-const SITE_URL = "https://responsive-cn.dev"
-
 export function npxCommand(item: string): string {
   return `npx shadcn add @responsivecn/${item}`
 }
@@ -65,5 +65,5 @@ export function pnpmCommand(item: string): string {
 }
 
 export function itemUrl(item: string): string {
-  return `${SITE_URL}/r/${item}.json`
+  return `${siteUrl}/r/${item}.json`
 }

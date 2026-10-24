@@ -3,6 +3,7 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 import { RootProvider } from "fumadocs-ui/provider/tanstack"
 
+import { appName } from "@/lib/shared"
 import appCss from "../styles.css?url"
 
 export const Route = createRootRoute({
@@ -19,15 +20,17 @@ export const Route = createRootRoute({
         name: "color-scheme",
         content: "light dark",
       },
-      {
-        title: "responsivecn",
-      },
+      { property: "og:site_name", content: appName },
+      { property: "og:locale", content: "en_US" },
+      { name: "is-agentic-site-type", content: "content" },
+      { title: appName },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
   notFoundComponent: () => (
