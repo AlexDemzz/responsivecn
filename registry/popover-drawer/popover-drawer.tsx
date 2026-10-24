@@ -23,7 +23,9 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 
-type Override<Props> = Props extends unknown ? Omit<Props, "children"> : never
+type Override<Props, Keys extends PropertyKey = never> = Props extends unknown
+  ? Omit<Props, "children" | Keys>
+  : never
 
 const ROOT_CALLBACKS = ["onOpenChange", "onOpenChangeComplete"]
 
@@ -149,7 +151,10 @@ function usePopoverDrawer() {
 }
 
 type PopoverDrawerProps = React.ComponentProps<typeof Popover> & {
-  drawer?: Override<React.ComponentProps<typeof Drawer>>
+  drawer?: Override<
+    React.ComponentProps<typeof Drawer>,
+    "open" | "defaultOpen" | "handle" | "triggerId" | "defaultTriggerId"
+  >
 }
 
 function PopoverDrawer({
@@ -178,8 +183,8 @@ function PopoverDrawer({
     <PopoverDrawerContext.Provider value={contextValue}>
       {isMobile ? (
         <Drawer
-          {...toMobileRootProps(
-            { ...props, open, onOpenChange: handleOpenChange },
+          {...toMobileRootProps<React.ComponentProps<typeof Drawer>>(
+            { autoFocus: true, ...props, open, onOpenChange: handleOpenChange },
             drawer,
             ROOT_DESKTOP_ONLY
           )}
@@ -196,7 +201,10 @@ function PopoverDrawer({
 }
 
 type PopoverDrawerTriggerProps = React.ComponentProps<typeof PopoverTrigger> & {
-  drawer?: Override<React.ComponentProps<typeof DrawerTrigger>>
+  drawer?: Override<
+    React.ComponentProps<typeof DrawerTrigger>,
+    "handle" | "payload"
+  >
 }
 
 function PopoverDrawerTrigger({ drawer, ...props }: PopoverDrawerTriggerProps) {

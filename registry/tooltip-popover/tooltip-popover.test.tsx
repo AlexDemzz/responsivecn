@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { Tooltip } from "@base-ui/react/tooltip"
 
 import { TooltipProvider } from "@/components/ui/tooltip"
 import {
@@ -179,5 +180,24 @@ describe("TooltipPopover", () => {
       "shared:false",
       "popover:false",
     ])
+  })
+
+  it("opens from a detached trigger placed outside the root at desktop width", async () => {
+    setViewportWidth(DESKTOP_WIDTH)
+    const handle = Tooltip.createHandle()
+    render(
+      <TooltipProvider>
+        <TooltipPopoverTrigger id="info" handle={handle}>
+          Info
+        </TooltipPopoverTrigger>
+        <TooltipPopover handle={handle}>
+          <TooltipPopoverContent>Tip</TooltipPopoverContent>
+        </TooltipPopover>
+      </TooltipProvider>
+    )
+
+    await act(async () => handle.open("info"))
+
+    expect(slot("tooltip-content")!.textContent).toContain("Tip")
   })
 })

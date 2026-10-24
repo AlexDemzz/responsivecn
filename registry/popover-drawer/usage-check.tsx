@@ -7,8 +7,8 @@
 
 import * as React from "react"
 
-import * as InstalledPopover from "@/components/ui/popover"
-import {
+import type * as InstalledPopover from "@/components/ui/popover"
+import type {
   Popover,
   PopoverContent,
   PopoverDescription,
@@ -16,9 +16,9 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import type { PopoverDrawerAnchor } from "./popover-drawer"
 import {
   PopoverDrawer,
-  PopoverDrawerAnchor,
   PopoverDrawerContent,
   PopoverDrawerDescription,
   PopoverDrawerFooter,
@@ -157,6 +157,28 @@ export function InvalidUsages() {
       {/* @ts-expect-error snapPoints is mobile-only: it lives in drawer={{}} */}
       <PopoverDrawer snapPoints={[0.5, 1]}>
         <PopoverDrawerContent>…</PopoverDrawerContent>
+      </PopoverDrawer>
+
+      {/* @ts-expect-error open belongs to the root, not to one side */}
+      <PopoverDrawer drawer={{ open: true }}>
+        <PopoverDrawerContent>…</PopoverDrawerContent>
+      </PopoverDrawer>
+
+      {/* @ts-expect-error defaultOpen belongs to the root, not to one side */}
+      <PopoverDrawer drawer={{ defaultOpen: true }}>
+        <PopoverDrawerContent>…</PopoverDrawerContent>
+      </PopoverDrawer>
+
+      {/* @ts-expect-error detached triggers are desktop-only */}
+      <PopoverDrawer drawer={{ triggerId: "settings" }}>
+        <PopoverDrawerContent>…</PopoverDrawerContent>
+      </PopoverDrawer>
+
+      <PopoverDrawer>
+        {/* @ts-expect-error detached triggers are desktop-only */}
+        <PopoverDrawerTrigger drawer={{ payload: "settings" }}>
+          Open
+        </PopoverDrawerTrigger>
       </PopoverDrawer>
 
       <PopoverDrawer>

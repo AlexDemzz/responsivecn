@@ -115,6 +115,9 @@ function nativeButtonFor(props: object) {
 }
 
 const ROOT_DESKTOP_ONLY = [
+  "handle",
+  "triggerId",
+  "defaultTriggerId",
   "disabled",
   "trackCursorAxis",
   "disableHoverablePopup",
@@ -122,7 +125,14 @@ const ROOT_DESKTOP_ONLY = [
   "disableHoverableContent",
 ]
 
-const TRIGGER_DESKTOP_ONLY = ["disabled", "delay", "closeDelay", "closeOnClick"]
+const TRIGGER_DESKTOP_ONLY = [
+  "handle",
+  "payload",
+  "disabled",
+  "delay",
+  "closeDelay",
+  "closeOnClick",
+]
 
 const TooltipPopoverContext = React.createContext<{
   isMobile: boolean
@@ -141,10 +151,7 @@ function useTooltipPopover() {
   return context
 }
 
-type TooltipPopoverProps = Omit<
-  React.ComponentProps<typeof Tooltip>,
-  "handle" | "triggerId" | "defaultTriggerId"
-> & {
+type TooltipPopoverProps = React.ComponentProps<typeof Tooltip> & {
   popover?: Override<
     React.ComponentProps<typeof Popover>,
     "open" | "defaultOpen" | "handle" | "triggerId" | "defaultTriggerId"
@@ -207,7 +214,7 @@ function TooltipPopover({
 
 type TooltipPopoverTriggerProps = Omit<
   React.ComponentProps<typeof TooltipTrigger>,
-  "handle" | "payload" | "popover"
+  "popover"
 > & {
   popover?: Override<
     React.ComponentProps<typeof PopoverTrigger>,
@@ -219,17 +226,19 @@ function TooltipPopoverTrigger({
   popover,
   ...props
 }: TooltipPopoverTriggerProps) {
-  const { isMobile, triggerDisabledRef } = useTooltipPopover()
+  const context = React.useContext(TooltipPopoverContext)
+  const triggerDisabledRef = context?.triggerDisabledRef
   const disabled = isDisabled(props)
 
   React.useEffect(() => {
+    if (!triggerDisabledRef) return
     triggerDisabledRef.current = disabled
     return () => {
       triggerDisabledRef.current = false
     }
   }, [disabled, triggerDisabledRef])
 
-  if (isMobile) {
+  if (context?.isMobile) {
     return (
       <PopoverTrigger
         {...toMobileProps(

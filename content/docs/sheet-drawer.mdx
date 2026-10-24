@@ -250,19 +250,22 @@ only what it adds.
 
 ### SheetDrawer
 
-| Prop     | Type                                                                         | Default |
-| -------- | ---------------------------------------------------------------------------- | ------- |
-| `drawer` | `Omit<ComponentProps<typeof Drawer>, "children" \| "open" \| "defaultOpen">` | -       |
+| Prop     | Type                                                           | Default |
+| -------- | -------------------------------------------------------------- | ------- |
+| `drawer` | `Omit<ComponentProps<typeof Drawer>, "children" \| RootState>` | -       |
 
-`open` and `defaultOpen` are left out of `drawer`: both sides share one open
-state. `drawer.onOpenChange` runs after the shared `onOpenChange` and receives
-your Drawer's own arguments, such as a `"swipe"` reason on Base UI.
+`RootState` stands for the keys that `drawer` leaves out because they belong
+to the shared root: `open` and `defaultOpen`, since both sides share one open
+state, and the detached-trigger props `handle`, `triggerId` and
+`defaultTriggerId`. `drawer.onOpenChange` runs after the shared
+`onOpenChange` and receives your Drawer's own arguments, such as a `"swipe"`
+reason on Base UI.
 
 ### SheetDrawerTrigger
 
-| Prop     | Type                                                     | Default |
-| -------- | -------------------------------------------------------- | ------- |
-| `drawer` | `Omit<ComponentProps<typeof DrawerTrigger>, "children">` | -       |
+| Prop     | Type                                                                              | Default |
+| -------- | --------------------------------------------------------------------------------- | ------- |
+| `drawer` | `Omit<ComponentProps<typeof DrawerTrigger>, "children" \| "handle" \| "payload">` | -       |
 
 ### SheetDrawerContent
 

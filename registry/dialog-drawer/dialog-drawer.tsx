@@ -187,9 +187,9 @@ type DialogDrawerTriggerProps = React.ComponentProps<typeof DialogTrigger> & {
 }
 
 function DialogDrawerTrigger({ drawer, ...props }: DialogDrawerTriggerProps) {
-  const { isMobile } = useDialogDrawer()
+  const context = React.useContext(DialogDrawerContext)
 
-  if (isMobile) {
+  if (context?.isMobile) {
     return (
       <DrawerTrigger {...toMobileProps(props, drawer, TRIGGER_DESKTOP_ONLY)} />
     )

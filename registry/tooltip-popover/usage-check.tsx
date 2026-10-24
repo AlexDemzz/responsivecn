@@ -8,17 +8,17 @@
 import * as React from "react"
 
 import { Button } from "@/components/ui/button"
-import {
+import type {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import {
+import type {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import {
   TooltipPopover,
   TooltipPopoverContent,
@@ -38,24 +38,18 @@ type DesktopProps<Part extends React.ElementType> = Omit<
 
 // The drop-in contract: every part takes exactly the installed desktop
 // wrapper's props (render on Base UI, asChild on Radix), whatever the base,
-// minus the Base UI detached-trigger props a Popover cannot share.
+// minus the native popover attribute, replaced by the override.
 export type DropIn = [
   Expect<
     SameProps<
       DesktopProps<typeof TooltipPopover>,
-      Omit<
-        React.ComponentProps<typeof Tooltip>,
-        "handle" | "triggerId" | "defaultTriggerId"
-      >
+      React.ComponentProps<typeof Tooltip>
     >
   >,
   Expect<
     SameProps<
       DesktopProps<typeof TooltipPopoverTrigger>,
-      Omit<
-        React.ComponentProps<typeof TooltipTrigger>,
-        "handle" | "payload" | "popover"
-      >
+      Omit<React.ComponentProps<typeof TooltipTrigger>, "popover">
     >
   >,
   Expect<

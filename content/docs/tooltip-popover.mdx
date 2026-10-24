@@ -241,8 +241,10 @@ logic that needs the Popover's details.
 ## Props not carried over
 
 - **Detached triggers on Base UI:** `handle`, `triggerId` and
-  `defaultTriggerId` on the root, `handle` and `payload` on the Trigger. A
-  Tooltip handle cannot open a Popover, so these are left out.
+  `defaultTriggerId` on the root, `handle` and `payload` on the Trigger. They
+  work at 768px and up. A Tooltip handle cannot open a Popover, so below
+  768px the popover opens only from a `TooltipPopoverTrigger` placed inside
+  `TooltipPopover`.
 - **Hover and cursor props:** `delay`, `closeDelay`, `closeOnClick`,
   `trackCursorAxis`, `disableHoverablePopup` on Base UI, and
   `delayDuration`, `disableHoverableContent` on Radix, apply at 768px and up
@@ -270,15 +272,20 @@ only what it adds.
 
 ### TooltipPopover
 
-| Prop      | Type                                               | Default |
-| --------- | -------------------------------------------------- | ------- |
-| `popover` | `Omit<ComponentProps<typeof Popover>, "children">` | -       |
+| Prop      | Type                                                            | Default |
+| --------- | --------------------------------------------------------------- | ------- |
+| `popover` | `Omit<ComponentProps<typeof Popover>, "children" \| RootState>` | -       |
+
+`RootState` stands for the keys that `popover` leaves out because they belong
+to the shared root: `open` and `defaultOpen`, since both sides share one open
+state, and the detached-trigger props `handle`, `triggerId` and
+`defaultTriggerId`.
 
 ### TooltipPopoverTrigger
 
-| Prop      | Type                                                      | Default |
-| --------- | --------------------------------------------------------- | ------- |
-| `popover` | `Omit<ComponentProps<typeof PopoverTrigger>, "children">` | -       |
+| Prop      | Type                                                                               | Default |
+| --------- | ---------------------------------------------------------------------------------- | ------- |
+| `popover` | `Omit<ComponentProps<typeof PopoverTrigger>, "children" \| "handle" \| "payload">` | -       |
 
 ### TooltipPopoverContent
 

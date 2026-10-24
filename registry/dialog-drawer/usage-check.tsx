@@ -8,7 +8,7 @@
 import * as React from "react"
 
 import { Button } from "@/components/ui/button"
-import {
+import type {
   Dialog,
   DialogClose,
   DialogContent,
@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
+import type {
   Drawer,
   DrawerClose,
   DrawerContent,

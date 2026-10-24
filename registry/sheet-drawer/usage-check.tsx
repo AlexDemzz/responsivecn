@@ -8,7 +8,7 @@
 import * as React from "react"
 
 import { Button } from "@/components/ui/button"
-import {
+import type {
   Sheet,
   SheetClose,
   SheetContent,
@@ -195,6 +195,18 @@ export function InvalidUsages() {
       {/* @ts-expect-error defaultOpen belongs to the root, not to one side */}
       <SheetDrawer drawer={{ defaultOpen: true }}>
         <SheetDrawerContent>…</SheetDrawerContent>
+      </SheetDrawer>
+
+      {/* @ts-expect-error detached triggers are desktop-only */}
+      <SheetDrawer drawer={{ triggerId: "settings" }}>
+        <SheetDrawerContent>…</SheetDrawerContent>
+      </SheetDrawer>
+
+      <SheetDrawer>
+        {/* @ts-expect-error detached triggers are desktop-only */}
+        <SheetDrawerTrigger drawer={{ payload: "settings" }}>
+          Open
+        </SheetDrawerTrigger>
       </SheetDrawer>
 
       <SheetDrawer>

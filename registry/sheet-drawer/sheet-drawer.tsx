@@ -141,7 +141,10 @@ function useSheetDrawer() {
 }
 
 type SheetDrawerProps = React.ComponentProps<typeof Sheet> & {
-  drawer?: Override<React.ComponentProps<typeof Drawer>, "open" | "defaultOpen">
+  drawer?: Override<
+    React.ComponentProps<typeof Drawer>,
+    "open" | "defaultOpen" | "handle" | "triggerId" | "defaultTriggerId"
+  >
 }
 
 function SheetDrawer({
@@ -195,7 +198,10 @@ function SheetDrawer({
 }
 
 type SheetDrawerTriggerProps = React.ComponentProps<typeof SheetTrigger> & {
-  drawer?: Override<React.ComponentProps<typeof DrawerTrigger>>
+  drawer?: Override<
+    React.ComponentProps<typeof DrawerTrigger>,
+    "handle" | "payload"
+  >
 }
 
 function SheetDrawerTrigger({ drawer, ...props }: SheetDrawerTriggerProps) {

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest"
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { Dialog } from "@base-ui/react/dialog"
 
 import {
   DESKTOP_WIDTH,
@@ -171,5 +172,25 @@ describe("DialogDrawer", () => {
     )
 
     expect(screen.queryByRole("button", { name: "Close" })).toBeNull()
+  })
+
+  it("opens from a detached trigger placed outside the root at desktop width", async () => {
+    setViewportWidth(DESKTOP_WIDTH)
+    const handle = Dialog.createHandle()
+    render(
+      <>
+        <DialogDrawerTrigger handle={handle}>Open</DialogDrawerTrigger>
+        <DialogDrawer handle={handle}>
+          <DialogDrawerContent>
+            <DialogDrawerTitle>Edit profile</DialogDrawerTitle>
+          </DialogDrawerContent>
+        </DialogDrawer>
+      </>
+    )
+
+    fireEvent.click(screen.getByText("Open"))
+
+    expect(await screen.findByText("Edit profile")).toBeTruthy()
+    expect(slot("dialog-content")).not.toBeNull()
   })
 })
