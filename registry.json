@@ -7,9 +7,9 @@
       "name": "dialog-drawer",
       "type": "registry:ui",
       "title": "Dialog Drawer",
-      "description": "A responsive Dialog: a centered Dialog at desktop that becomes a swipeable Drawer below 768px. Drop-in replacement for the shadcn Dialog on Base UI or Radix: desktop props 1:1 on the root and every part, plus a drawer={{}} override typed on your Drawer.",
+      "description": "A responsive Dialog: a centered Dialog at desktop that becomes a swipeable Drawer below 768px. Drop-in replacement for the shadcn Dialog on Base UI or Radix: desktop props 1:1 on the root and every part, open state kept across the breakpoint, footer close button on both sides, plus a drawer={{}} override typed on your Drawer.",
       "dependencies": [],
-      "registryDependencies": ["dialog", "drawer", "use-mobile"],
+      "registryDependencies": ["dialog", "drawer", "button", "use-mobile"],
       "files": [
         {
           "path": "registry/dialog-drawer/dialog-drawer.tsx",

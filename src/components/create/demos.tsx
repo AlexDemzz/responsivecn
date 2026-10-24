@@ -73,7 +73,10 @@ function DialogDrawerDemo() {
       <DialogDrawerTrigger render={<Button variant="outline" />}>
         Edit profile
       </DialogDrawerTrigger>
-      <DialogDrawerContent>
+      <DialogDrawerContent
+        className="sm:max-w-sm"
+        drawer={{ className: "max-w-none" }}
+      >
         <DialogDrawerHeader>
           <DialogDrawerTitle>Edit profile</DialogDrawerTitle>
           <DialogDrawerDescription>

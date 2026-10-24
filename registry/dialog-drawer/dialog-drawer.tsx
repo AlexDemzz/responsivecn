@@ -4,6 +4,7 @@ import * as React from "react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
+import { buttonVariants } from "@/components/ui/button"
 import {
   Dialog,
   DialogClose,
@@ -25,7 +26,9 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 
-type Override<Props> = Props extends unknown ? Omit<Props, "children"> : never
+type Override<Props, Keys extends PropertyKey = never> = Props extends unknown
+  ? Omit<Props, "children" | Keys>
+  : never
 
 const ROOT_CALLBACKS = ["onOpenChange", "onOpenChangeComplete"]
 
@@ -71,12 +74,14 @@ function omitKeys(props: object, keys: readonly string[]) {
 
 function toMobileRootProps<Props extends object>(
   shared: object,
-  override: Props | undefined
+  override: object | undefined,
+  desktopOnly: readonly string[] = []
 ) {
+  const forwarded = omitKeys(shared, desktopOnly)
   return {
-    ...shared,
+    ...forwarded,
     ...override,
-    ...composeRootCallbacks(shared, override),
+    ...composeRootCallbacks(forwarded, override),
   } as Props
 }
 
@@ -98,6 +103,16 @@ function toMobileProps<Props extends object>(
   } as Props
 }
 
+function callOpenChange(handler: unknown, args: unknown[]) {
+  if (typeof handler === "function") handler(...args)
+  const details = args[1] as { isCanceled?: boolean } | undefined
+  return details?.isCanceled !== true
+}
+
+const ROOT_DESKTOP_ONLY = ["handle", "triggerId", "defaultTriggerId"]
+
+const TRIGGER_DESKTOP_ONLY = ["handle", "payload"]
+
 const CONTENT_DESKTOP_ONLY = ["showCloseButton"]
 
 const DialogDrawerContext = React.createContext<{ isMobile: boolean } | null>(
@@ -114,40 +129,70 @@ function useDialogDrawer() {
   return context
 }
 
-type DialogDrawerProps = Omit<
-  React.ComponentProps<typeof Dialog>,
-  "handle" | "triggerId" | "defaultTriggerId"
-> & {
-  drawer?: Override<React.ComponentProps<typeof Drawer>>
+type DialogDrawerProps = React.ComponentProps<typeof Dialog> & {
+  drawer?: Override<
+    React.ComponentProps<typeof Drawer>,
+    "open" | "defaultOpen" | "handle" | "triggerId" | "defaultTriggerId"
+  >
 }
 
-function DialogDrawer({ drawer, children, ...props }: DialogDrawerProps) {
+function DialogDrawer({
+  drawer,
+  open: openProp,
+  defaultOpen = false,
+  onOpenChange,
+  children,
+  ...props
+}: DialogDrawerProps) {
   const isMobile = useIsMobile()
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
+  const open = openProp ?? uncontrolledOpen
   const contextValue = React.useMemo(() => ({ isMobile }), [isMobile])
+
+  const handleOpenChange = React.useCallback(
+    (nextOpen: boolean, ...details: unknown[]) => {
+      if (callOpenChange(onOpenChange, [nextOpen, ...details])) {
+        setUncontrolledOpen(nextOpen)
+      }
+    },
+    [onOpenChange]
+  )
 
   return (
     <DialogDrawerContext.Provider value={contextValue}>
       {isMobile ? (
-        <Drawer {...toMobileRootProps(props, drawer)}>{children}</Drawer>
+        <Drawer
+          {...toMobileRootProps<React.ComponentProps<typeof Drawer>>(
+            { autoFocus: true, ...props, open, onOpenChange: handleOpenChange },
+            drawer,
+            ROOT_DESKTOP_ONLY
+          )}
+        >
+          {children}
+        </Drawer>
       ) : (
-        <Dialog {...props}>{children}</Dialog>
+        <Dialog {...props} open={open} onOpenChange={handleOpenChange}>
+          {children}
+        </Dialog>
       )}
     </DialogDrawerContext.Provider>
   )
 }
 
-type DialogDrawerTriggerProps = Omit<
-  React.ComponentProps<typeof DialogTrigger>,
-  "handle"
-> & {
-  drawer?: Override<React.ComponentProps<typeof DrawerTrigger>>
+type DialogDrawerTriggerProps = React.ComponentProps<typeof DialogTrigger> & {
+  drawer?: Override<
+    React.ComponentProps<typeof DrawerTrigger>,
+    "handle" | "payload"
+  >
 }
 
 function DialogDrawerTrigger({ drawer, ...props }: DialogDrawerTriggerProps) {
   const { isMobile } = useDialogDrawer()
 
   if (isMobile) {
-    return <DrawerTrigger {...toMobileProps(props, drawer)} />
+    return (
+      <DrawerTrigger {...toMobileProps(props, drawer, TRIGGER_DESKTOP_ONLY)} />
+    )
   }
   return <DialogTrigger {...props} />
 }
@@ -190,15 +235,31 @@ type DialogDrawerFooterProps = React.ComponentProps<typeof DialogFooter> & {
   drawer?: Override<React.ComponentProps<typeof DrawerFooter>>
 }
 
-function DialogDrawerFooter({ drawer, ...props }: DialogDrawerFooterProps) {
+function DialogDrawerFooter({
+  drawer,
+  showCloseButton,
+  children,
+  ...props
+}: DialogDrawerFooterProps) {
   const { isMobile } = useDialogDrawer()
 
   if (isMobile) {
     return (
-      <DrawerFooter {...toMobileProps(props, drawer, CONTENT_DESKTOP_ONLY)} />
+      <DrawerFooter {...toMobileProps(props, drawer)}>
+        {children}
+        {showCloseButton && (
+          <DrawerClose className={buttonVariants({ variant: "outline" })}>
+            Close
+          </DrawerClose>
+        )}
+      </DrawerFooter>
     )
   }
-  return <DialogFooter {...props} />
+  return (
+    <DialogFooter showCloseButton={showCloseButton} {...props}>
+      {children}
+    </DialogFooter>
+  )
 }
 
 type DialogDrawerTitleProps = React.ComponentProps<typeof DialogTitle> & {
@@ -254,14 +315,4 @@ export {
   DialogDrawerHeader,
   DialogDrawerTitle,
   DialogDrawerTrigger,
-}
-export type {
-  DialogDrawerCloseProps,
-  DialogDrawerContentProps,
-  DialogDrawerDescriptionProps,
-  DialogDrawerFooterProps,
-  DialogDrawerHeaderProps,
-  DialogDrawerProps,
-  DialogDrawerTitleProps,
-  DialogDrawerTriggerProps,
 }

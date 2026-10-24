@@ -77,7 +77,7 @@ API (Base UI Drawer or Vaul) — no casts.
 <DialogDrawer drawer={{ snapPoints: [0.5, 1] }}>
   <DialogDrawerTrigger className="w-full">Open</DialogDrawerTrigger>
   <DialogDrawerContent
-    className="sm:max-w-lg"
+    className="md:max-w-lg"
     drawer={{ className: "max-h-[80dvh]" }}
   >
     …
@@ -105,23 +105,13 @@ The **breakpoint** is fixed at 768px, read through the standard shadcn
 desktop component renders; below, the mobile one. This is a conditional
 render, not CSS: only one side is mounted at a time.
 
-<Callout type="info" title="Control `open` to keep the overlay open across the breakpoint">
+<Callout type="info" title="What carries over the breakpoint">
 
-Crossing 768px unmounts one side and mounts the other, so anything held _inside_
-the overlay does not carry over — an uncontrolled `open`, uncontrolled form
-fields. This is inherent to swapping two different components, not specific to
-responsivecn: the hand-rolled Dialog + Drawer recipe lifts `open` into a
-`useState` for exactly this reason.
-
-Drive `open` from your own state and it survives the swap:
-
-```tsx
-const [open, setOpen] = React.useState(false)
-
-<DialogDrawer open={open} onOpenChange={setOpen}>
-```
-
-Lift any form values you cannot afford to lose the same way.
+Crossing 768px unmounts one side and mounts the other. `DialogDrawer`,
+`SheetDrawer` and `PopoverDrawer` hold the open state themselves, so an
+uncontrolled overlay that is open stays open on the other side. Anything held
+_inside_ the overlay does not carry over: uncontrolled form fields reset. Keep
+values you cannot afford to lose in your own state or a form library.
 
 </Callout>
 

@@ -2,7 +2,6 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { buttonVariants } from "@/components/ui/button"
 import {
   DialogDrawer,
-  DialogDrawerClose,
   DialogDrawerContent,
   DialogDrawerDescription,
   DialogDrawerFooter,
@@ -11,9 +10,6 @@ import {
   DialogDrawerTrigger,
 } from "../../../registry/dialog-drawer/dialog-drawer"
 
-// Live preview for the DialogDrawer docs page. It renders the real registry
-// component, so the preview swaps for real: the hook reads the
-// window width, and the caption reflects the side currently rendered.
 export function DialogDrawerPreview() {
   const isMobile = useIsMobile()
 
@@ -23,7 +19,10 @@ export function DialogDrawerPreview() {
         <DialogDrawerTrigger className={buttonVariants({ variant: "outline" })}>
           Edit profile
         </DialogDrawerTrigger>
-        <DialogDrawerContent>
+        <DialogDrawerContent
+          className="sm:max-w-sm"
+          drawer={{ className: "max-w-none" }}
+        >
           <DialogDrawerHeader>
             <DialogDrawerTitle>Edit profile</DialogDrawerTitle>
             <DialogDrawerDescription>
@@ -44,20 +43,15 @@ export function DialogDrawerPreview() {
               />
             </label>
           </form>
-          <DialogDrawerFooter>
-            <DialogDrawerClose
-              className={buttonVariants({ variant: "outline" })}
-            >
-              Cancel
-            </DialogDrawerClose>
-          </DialogDrawerFooter>
+          <DialogDrawerFooter showCloseButton />
         </DialogDrawerContent>
       </DialogDrawer>
       <p className="text-xs text-muted-foreground">
         {isMobile
           ? "Below 768px — opens as a Drawer."
           : "At 768px and up — opens as a Dialog."}{" "}
-        Resize the window across 768px and reopen to see the swap.
+        Resize the window across 768px while it is open: it stays open on the
+        other side.
       </p>
     </div>
   )

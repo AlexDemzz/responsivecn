@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest"
-import { act, cleanup, render } from "@testing-library/react"
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 
-import { DESKTOP_WIDTH, MOBILE_WIDTH, setViewportWidth } from "@/test/viewport"
+import {
+  DESKTOP_WIDTH,
+  MOBILE_WIDTH,
+  resizeViewport,
+  setViewportWidth,
+} from "@/test/viewport"
 
 import {
   DialogDrawer,
@@ -90,5 +95,81 @@ describe("DialogDrawer", () => {
     await act(async () => slot("dialog-close")!.click())
 
     expect(calls).toEqual(["shared:false"])
+  })
+
+  it("keeps an uncontrolled dialog open when the viewport crosses 768px", async () => {
+    setViewportWidth(DESKTOP_WIDTH)
+    render(
+      <DialogDrawer>
+        <DialogDrawerTrigger>Open</DialogDrawerTrigger>
+        <DialogDrawerContent>
+          <DialogDrawerTitle>Edit profile</DialogDrawerTitle>
+        </DialogDrawerContent>
+      </DialogDrawer>
+    )
+
+    fireEvent.click(screen.getByText("Open"))
+    expect(await screen.findByText("Edit profile")).toBeTruthy()
+    expect(slot("dialog-content")).not.toBeNull()
+
+    await act(async () => resizeViewport(MOBILE_WIDTH))
+
+    expect(slot("drawer-title")!.textContent).toBe("Edit profile")
+  })
+
+  it("stays closed when the shared onOpenChange cancels the change", async () => {
+    setViewportWidth(DESKTOP_WIDTH)
+    render(
+      <DialogDrawer onOpenChange={(_open, details) => details.cancel()}>
+        <DialogDrawerTrigger>Open</DialogDrawerTrigger>
+        <DialogDrawerContent>
+          <DialogDrawerTitle>Edit profile</DialogDrawerTitle>
+        </DialogDrawerContent>
+      </DialogDrawer>
+    )
+
+    fireEvent.click(screen.getByText("Open"))
+    await act(async () => {})
+
+    expect(slot("dialog-content")).toBeNull()
+  })
+
+  it("renders the Footer close button below 768px, and it closes the drawer", async () => {
+    setViewportWidth(MOBILE_WIDTH)
+    render(
+      <DialogDrawer defaultOpen>
+        <DialogDrawerContent>
+          <DialogDrawerTitle>Edit profile</DialogDrawerTitle>
+          <DialogDrawerFooter showCloseButton>
+            <button type="submit">Save</button>
+          </DialogDrawerFooter>
+        </DialogDrawerContent>
+      </DialogDrawer>
+    )
+
+    const footer = slot("drawer-footer")!
+    const close = screen.getByRole("button", { name: "Close" })
+    expect(footer.contains(close)).toBe(true)
+    expect(footer.lastElementChild).toBe(close)
+
+    await act(async () => close.click())
+
+    expect(slot("drawer-popup")?.hasAttribute("data-open") ?? false).toBe(false)
+  })
+
+  it("renders no Footer close button by default below 768px", () => {
+    setViewportWidth(MOBILE_WIDTH)
+    render(
+      <DialogDrawer defaultOpen>
+        <DialogDrawerContent>
+          <DialogDrawerTitle>Edit profile</DialogDrawerTitle>
+          <DialogDrawerFooter>
+            <button type="submit">Save</button>
+          </DialogDrawerFooter>
+        </DialogDrawerContent>
+      </DialogDrawer>
+    )
+
+    expect(screen.queryByRole("button", { name: "Close" })).toBeNull()
   })
 })

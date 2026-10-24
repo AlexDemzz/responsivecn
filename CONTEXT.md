@@ -24,7 +24,7 @@ Fixed at 768px, read via the standard shadcn `useIsMobile` hook (`@/hooks/use-mo
 
 ## Registry
 
-The static shadcn registry served under `/r/` at https://responsive-cn.dev: one item JSON per slug, `/r/<slug>.json`, built with `npx shadcn build` from the root `registry.json`. Each item is `registry:ui` with one source file `registry/<slug>/<slug>.tsx`, bare `registryDependencies` (`dialog`, `drawer`, `sheet`, `popover`, `tooltip`, `use-mobile`) that shadcn resolves to the user's own base, and empty npm `dependencies`.
+The static shadcn registry served under `/r/` at https://responsive-cn.dev: one item JSON per slug, `/r/<slug>.json`, built with `npx shadcn build` from the root `registry.json`. Each item is `registry:ui` with one source file `registry/<slug>/<slug>.tsx`, bare `registryDependencies` (`dialog`, `drawer`, `sheet`, `popover`, `tooltip`, `button`, `use-mobile`) that shadcn resolves to the user's own base, and empty npm `dependencies`.
 
 ## Catalog
 
