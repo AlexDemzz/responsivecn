@@ -7,8 +7,6 @@ import { cn } from "@/lib/utils"
 import {
   Popover,
   PopoverContent,
-  PopoverDescription,
-  PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover"
 import {
@@ -17,7 +15,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-type Override<Props> = Props extends unknown ? Omit<Props, "children"> : never
+type Override<Props, Keys extends PropertyKey = never> = Props extends unknown
+  ? Omit<Props, "children" | Keys>
+  : never
 
 const ROOT_CALLBACKS = ["onOpenChange", "onOpenChangeComplete"]
 
@@ -63,12 +63,14 @@ function omitKeys(props: object, keys: readonly string[]) {
 
 function toMobileRootProps<Props extends object>(
   shared: object,
-  override: Props | undefined
+  override: object | undefined,
+  desktopOnly: readonly string[] = []
 ) {
+  const forwarded = omitKeys(shared, desktopOnly)
   return {
-    ...shared,
+    ...forwarded,
     ...override,
-    ...composeRootCallbacks(shared, override),
+    ...composeRootCallbacks(forwarded, override),
   } as Props
 }
 
@@ -90,9 +92,42 @@ function toMobileProps<Props extends object>(
   } as Props
 }
 
-const TooltipPopoverContext = React.createContext<{ isMobile: boolean } | null>(
-  null
-)
+function callOpenChange(handler: unknown, args: unknown[]) {
+  if (typeof handler === "function") handler(...args)
+  const details = args[1] as { isCanceled?: boolean } | undefined
+  return details?.isCanceled !== true
+}
+
+function isDisabled(props: object) {
+  return (props as { disabled?: unknown }).disabled === true
+}
+
+function nativeButtonFor(props: object) {
+  const { render } = props as { render?: unknown }
+  if (
+    React.isValidElement(render) &&
+    typeof render.type === "string" &&
+    render.type !== "button"
+  ) {
+    return { nativeButton: false }
+  }
+  return {}
+}
+
+const ROOT_DESKTOP_ONLY = [
+  "disabled",
+  "trackCursorAxis",
+  "disableHoverablePopup",
+  "delayDuration",
+  "disableHoverableContent",
+]
+
+const TRIGGER_DESKTOP_ONLY = ["disabled", "delay", "closeDelay", "closeOnClick"]
+
+const TooltipPopoverContext = React.createContext<{
+  isMobile: boolean
+  triggerDisabledRef: React.RefObject<boolean>
+} | null>(null)
 
 function useTooltipPopover() {
   const context = React.useContext(TooltipPopoverContext)
@@ -110,19 +145,61 @@ type TooltipPopoverProps = Omit<
   React.ComponentProps<typeof Tooltip>,
   "handle" | "triggerId" | "defaultTriggerId"
 > & {
-  popover?: Override<React.ComponentProps<typeof Popover>>
+  popover?: Override<
+    React.ComponentProps<typeof Popover>,
+    "open" | "defaultOpen" | "handle" | "triggerId" | "defaultTriggerId"
+  >
 }
 
-function TooltipPopover({ popover, children, ...props }: TooltipPopoverProps) {
+function TooltipPopover({
+  popover,
+  open: openProp,
+  defaultOpen = false,
+  onOpenChange,
+  children,
+  ...props
+}: TooltipPopoverProps) {
   const isMobile = useIsMobile()
-  const contextValue = React.useMemo(() => ({ isMobile }), [isMobile])
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
+  const triggerDisabledRef = React.useRef(false)
+  const open = openProp ?? uncontrolledOpen
+  const disabled = isDisabled(props)
+  const contextValue = React.useMemo(
+    () => ({ isMobile, triggerDisabledRef }),
+    [isMobile]
+  )
+
+  const handleOpenChange = React.useCallback(
+    (nextOpen: boolean, ...details: unknown[]) => {
+      const blocked = disabled || triggerDisabledRef.current
+      if (nextOpen && isMobile && blocked) return
+      if (callOpenChange(onOpenChange, [nextOpen, ...details])) {
+        setUncontrolledOpen(nextOpen)
+      }
+    },
+    [disabled, isMobile, onOpenChange]
+  )
 
   return (
     <TooltipPopoverContext.Provider value={contextValue}>
       {isMobile ? (
-        <Popover {...toMobileRootProps(props, popover)}>{children}</Popover>
+        <Popover
+          {...toMobileRootProps<React.ComponentProps<typeof Popover>>(
+            {
+              ...props,
+              open: open && !disabled,
+              onOpenChange: handleOpenChange,
+            },
+            popover,
+            ROOT_DESKTOP_ONLY
+          )}
+        >
+          {children}
+        </Popover>
       ) : (
-        <Tooltip {...props}>{children}</Tooltip>
+        <Tooltip {...props} open={open} onOpenChange={handleOpenChange}>
+          {children}
+        </Tooltip>
       )}
     </TooltipPopoverContext.Provider>
   )
@@ -130,19 +207,38 @@ function TooltipPopover({ popover, children, ...props }: TooltipPopoverProps) {
 
 type TooltipPopoverTriggerProps = Omit<
   React.ComponentProps<typeof TooltipTrigger>,
-  "handle" | "popover"
+  "handle" | "payload" | "popover"
 > & {
-  popover?: Override<React.ComponentProps<typeof PopoverTrigger>>
+  popover?: Override<
+    React.ComponentProps<typeof PopoverTrigger>,
+    "handle" | "payload"
+  >
 }
 
 function TooltipPopoverTrigger({
   popover,
   ...props
 }: TooltipPopoverTriggerProps) {
-  const { isMobile } = useTooltipPopover()
+  const { isMobile, triggerDisabledRef } = useTooltipPopover()
+  const disabled = isDisabled(props)
+
+  React.useEffect(() => {
+    triggerDisabledRef.current = disabled
+    return () => {
+      triggerDisabledRef.current = false
+    }
+  }, [disabled, triggerDisabledRef])
 
   if (isMobile) {
-    return <PopoverTrigger {...toMobileProps(props, popover)} />
+    return (
+      <PopoverTrigger
+        {...toMobileProps(
+          { ...nativeButtonFor(props), ...props },
+          popover,
+          TRIGGER_DESKTOP_ONLY
+        )}
+      />
+    )
   }
   return <TooltipTrigger {...props} />
 }
@@ -156,85 +252,14 @@ type TooltipPopoverContentProps = Omit<
 
 function TooltipPopoverContent({
   popover,
-  children,
   ...props
 }: TooltipPopoverContentProps) {
   const { isMobile } = useTooltipPopover()
 
   if (isMobile) {
-    return (
-      <PopoverContent {...toMobileProps(props, popover)}>
-        {children}
-      </PopoverContent>
-    )
+    return <PopoverContent {...toMobileProps(props, popover)} />
   }
-  return <TooltipContent {...props}>{children}</TooltipContent>
+  return <TooltipContent {...props} />
 }
 
-type TooltipPopoverTitleProps = Omit<React.ComponentProps<"div">, "popover"> & {
-  popover?: Override<React.ComponentProps<typeof PopoverTitle>>
-}
-
-function TooltipPopoverTitle({
-  popover,
-  className,
-  ...props
-}: TooltipPopoverTitleProps) {
-  const { isMobile } = useTooltipPopover()
-
-  if (isMobile) {
-    return <PopoverTitle {...toMobileProps({ className, ...props }, popover)} />
-  }
-  return (
-    <div
-      data-slot="tooltip-popover-title"
-      className={cn("font-medium", className)}
-      {...props}
-    />
-  )
-}
-
-type TooltipPopoverDescriptionProps = Omit<
-  React.ComponentProps<"div">,
-  "popover"
-> & {
-  popover?: Override<React.ComponentProps<typeof PopoverDescription>>
-}
-
-function TooltipPopoverDescription({
-  popover,
-  className,
-  ...props
-}: TooltipPopoverDescriptionProps) {
-  const { isMobile } = useTooltipPopover()
-
-  if (isMobile) {
-    return (
-      <PopoverDescription
-        {...toMobileProps({ className, ...props }, popover)}
-      />
-    )
-  }
-  return (
-    <div
-      data-slot="tooltip-popover-description"
-      className={cn("text-muted-foreground", className)}
-      {...props}
-    />
-  )
-}
-
-export {
-  TooltipPopover,
-  TooltipPopoverContent,
-  TooltipPopoverDescription,
-  TooltipPopoverTitle,
-  TooltipPopoverTrigger,
-}
-export type {
-  TooltipPopoverContentProps,
-  TooltipPopoverDescriptionProps,
-  TooltipPopoverProps,
-  TooltipPopoverTitleProps,
-  TooltipPopoverTriggerProps,
-}
+export { TooltipPopover, TooltipPopoverContent, TooltipPopoverTrigger }

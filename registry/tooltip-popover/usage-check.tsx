@@ -7,16 +7,21 @@
 
 import * as React from "react"
 
+import { Button } from "@/components/ui/button"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import {
   TooltipPopover,
   TooltipPopoverContent,
-  TooltipPopoverDescription,
-  TooltipPopoverTitle,
   TooltipPopoverTrigger,
 } from "./tooltip-popover"
 
@@ -32,7 +37,8 @@ type DesktopProps<Part extends React.ElementType> = Omit<
 >
 
 // The drop-in contract: every part takes exactly the installed desktop
-// wrapper's props (render on Base UI, asChild on Radix), whatever the base.
+// wrapper's props (render on Base UI, asChild on Radix), whatever the base,
+// minus the Base UI detached-trigger props a Popover cannot share.
 export type DropIn = [
   Expect<
     SameProps<
@@ -46,7 +52,10 @@ export type DropIn = [
   Expect<
     SameProps<
       DesktopProps<typeof TooltipPopoverTrigger>,
-      Omit<React.ComponentProps<typeof TooltipTrigger>, "handle" | "popover">
+      Omit<
+        React.ComponentProps<typeof TooltipTrigger>,
+        "handle" | "payload" | "popover"
+      >
     >
   >,
   Expect<
@@ -55,17 +64,44 @@ export type DropIn = [
       Omit<React.ComponentProps<typeof TooltipContent>, "popover">
     >
   >,
-  Expect<
-    SameProps<
-      DesktopProps<typeof TooltipPopoverTitle>,
-      Omit<React.ComponentProps<"div">, "popover">
+]
+
+// A desktop-only prop is one the installed Tooltip part takes and the Popover
+// part does not. Each one must be on the list the component keeps off the
+// Popover (ROOT_DESKTOP_ONLY, TRIGGER_DESKTOP_ONLY) or out of the public
+// type, or it would be spread onto the Popover. This fails when an upstream
+// wrapper adds one.
+type UnhandledDesktopOnly<
+  Desktop extends React.ElementType,
+  Mobile extends React.ElementType,
+  Handled extends PropertyKey,
+> = Exclude<
+  keyof React.ComponentProps<Desktop>,
+  keyof React.ComponentProps<Mobile> | Handled
+>
+type ExpectNever<T extends never> = T
+
+export type DesktopOnlyHandled = [
+  ExpectNever<
+    UnhandledDesktopOnly<
+      typeof Tooltip,
+      typeof Popover,
+      | "disabled"
+      | "trackCursorAxis"
+      | "disableHoverablePopup"
+      | "delayDuration"
+      | "disableHoverableContent"
     >
   >,
-  Expect<
-    SameProps<
-      DesktopProps<typeof TooltipPopoverDescription>,
-      Omit<React.ComponentProps<"div">, "popover">
+  ExpectNever<
+    UnhandledDesktopOnly<
+      typeof TooltipTrigger,
+      typeof PopoverTrigger,
+      "disabled" | "delay" | "closeDelay" | "closeOnClick"
     >
+  >,
+  ExpectNever<
+    UnhandledDesktopOnly<typeof TooltipContent, typeof PopoverContent, never>
   >,
 ]
 
@@ -76,12 +112,27 @@ export function BasicUsage() {
         i
       </TooltipPopoverTrigger>
       <TooltipPopoverContent>
-        <TooltipPopoverTitle>Response rate</TooltipPopoverTitle>
-        <TooltipPopoverDescription>
-          The share of messages you reply to within 24 hours.
-        </TooltipPopoverDescription>
+        The share of messages you reply to within 24 hours.
       </TooltipPopoverContent>
     </TooltipPopover>
+  )
+}
+
+// shadcn's Tooltip docs make the Trigger a Button: with render={<Button />}
+// on Base UI, with asChild on Radix. The spread carries both spellings; each
+// base type-checks the one it declares.
+const asButton = { asChild: true, render: <Button variant="outline" /> }
+
+export function ShadcnTooltipDocsExample() {
+  return (
+    <TooltipProvider>
+      <TooltipPopover>
+        <TooltipPopoverTrigger {...asButton}>Hover</TooltipPopoverTrigger>
+        <TooltipPopoverContent>
+          <p>Add to library</p>
+        </TooltipPopoverContent>
+      </TooltipPopover>
+    </TooltipProvider>
   )
 }
 
@@ -113,10 +164,14 @@ export function MobileOverrides() {
       >
         Info
       </TooltipPopoverTrigger>
-      <TooltipPopoverContent popover={{ className: "w-64", side: "top" }}>
-        <TooltipPopoverTitle popover={{ className: "text-base" }}>
-          Title
-        </TooltipPopoverTitle>
+      <TooltipPopoverContent
+        popover={{
+          className: "w-auto max-w-xs",
+          side: "bottom",
+          sideOffset: 8,
+        }}
+      >
+        …
       </TooltipPopoverContent>
     </TooltipPopover>
   )
@@ -130,11 +185,21 @@ export function InvalidUsages() {
         <TooltipPopoverContent>…</TooltipPopoverContent>
       </TooltipPopover>
 
+      {/* @ts-expect-error open belongs to the root, not to one side */}
+      <TooltipPopover popover={{ open: true }}>
+        <TooltipPopoverContent>…</TooltipPopoverContent>
+      </TooltipPopover>
+
       <TooltipPopover>
         {/* @ts-expect-error the override is typed on the Popover, not free-form */}
         <TooltipPopoverContent popover={{ notAProp: true }}>
           …
         </TooltipPopoverContent>
+      </TooltipPopover>
+
+      <TooltipPopover>
+        {/* @ts-expect-error the native popover attribute is replaced by the override */}
+        <TooltipPopoverTrigger popover="auto">Info</TooltipPopoverTrigger>
       </TooltipPopover>
     </>
   )

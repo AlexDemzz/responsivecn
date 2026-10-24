@@ -6,15 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import {
   TooltipPopover,
   TooltipPopoverContent,
-  TooltipPopoverDescription,
-  TooltipPopoverTitle,
   TooltipPopoverTrigger,
 } from "../../../registry/tooltip-popover/tooltip-popover"
 
-// Live preview for the TooltipPopover docs page. It renders the real registry
-// component: an icon-button infotip — hover Tooltip at desktop,
-// press-to-open Popover below 768px, where hover does not exist. The
-// TooltipProvider wrapper is the app-level shadcn convention.
 export function TooltipPopoverPreview() {
   const isMobile = useIsMobile()
 
@@ -30,19 +24,16 @@ export function TooltipPopoverPreview() {
             >
               <InfoIcon />
             </TooltipPopoverTrigger>
-            <TooltipPopoverContent>
-              <TooltipPopoverTitle>Response rate</TooltipPopoverTitle>
-              <TooltipPopoverDescription>
-                The share of messages you reply to within 24 hours.
-              </TooltipPopoverDescription>
+            <TooltipPopoverContent popover={{ className: "w-auto max-w-xs" }}>
+              The share of messages you reply to within 24 hours.
             </TooltipPopoverContent>
           </TooltipPopover>
         </div>
       </TooltipProvider>
       <p className="text-xs text-muted-foreground">
         {isMobile
-          ? "Below 768px — tap the icon to open a Popover (hover does not exist on touch)."
-          : "At 768px and up — hover or focus the icon for a Tooltip."}{" "}
+          ? "Below 768px: tap the icon to open a Popover."
+          : "At 768px and up: hover or focus the icon for a Tooltip."}{" "}
         Resize the window across 768px to see the swap.
       </p>
     </div>

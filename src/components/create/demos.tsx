@@ -31,8 +31,6 @@ import {
 import {
   TooltipPopover,
   TooltipPopoverContent,
-  TooltipPopoverDescription,
-  TooltipPopoverTitle,
   TooltipPopoverTrigger,
 } from "../../../registry/tooltip-popover/tooltip-popover"
 import type { PairSlug } from "./pairs"
@@ -177,10 +175,7 @@ function TooltipPopoverDemo() {
           Hover or tap
         </TooltipPopoverTrigger>
         <TooltipPopoverContent>
-          <TooltipPopoverTitle>Response rate</TooltipPopoverTitle>
-          <TooltipPopoverDescription>
-            The share of messages you reply to within 24 hours.
-          </TooltipPopoverDescription>
+          The share of messages you reply to within 24 hours.
         </TooltipPopoverContent>
       </TooltipPopover>
     </TooltipProvider>
