@@ -132,14 +132,14 @@ function PopoverDrawerDemo() {
       <PopoverDrawerTrigger render={<Button variant="outline" />}>
         Open popover
       </PopoverDrawerTrigger>
-      <PopoverDrawerContent>
+      <PopoverDrawerContent className="w-80">
         <PopoverDrawerHeader>
           <PopoverDrawerTitle>Dimensions</PopoverDrawerTitle>
           <PopoverDrawerDescription>
             Set the dimensions for the layer.
           </PopoverDrawerDescription>
         </PopoverDrawerHeader>
-        <div className="flex flex-col gap-3 p-4 md:p-0">
+        <div className="flex flex-col gap-3">
           {(
             [
               ["width", "Width", "100%"],

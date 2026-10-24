@@ -4,6 +4,7 @@ import * as React from "react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
+import * as PopoverParts from "@/components/ui/popover"
 import {
   Popover,
   PopoverContent,
@@ -68,12 +69,14 @@ function omitKeys(props: object, keys: readonly string[]) {
 
 function toMobileRootProps<Props extends object>(
   shared: object,
-  override: Props | undefined
+  override: Props | undefined,
+  desktopOnly: readonly string[] = []
 ) {
+  const forwarded = omitKeys(shared, desktopOnly)
   return {
-    ...shared,
+    ...forwarded,
     ...override,
-    ...composeRootCallbacks(shared, override),
+    ...composeRootCallbacks(forwarded, override),
   } as Props
 }
 
@@ -95,7 +98,27 @@ function toMobileProps<Props extends object>(
   } as Props
 }
 
-const TRIGGER_DESKTOP_ONLY = ["openOnHover", "delay", "closeDelay"]
+function callOpenChange(handler: unknown, args: unknown[]) {
+  if (typeof handler === "function") handler(...args)
+  const details = args[1] as { isCanceled?: boolean } | undefined
+  return details?.isCanceled !== true
+}
+
+function readExport(parts: object, name: string) {
+  return (parts as Record<string, React.ElementType | undefined>)[name]
+}
+
+const PopoverAnchor = readExport(PopoverParts, "PopoverAnchor")
+
+const ROOT_DESKTOP_ONLY = ["handle", "triggerId", "defaultTriggerId"]
+
+const TRIGGER_DESKTOP_ONLY = [
+  "handle",
+  "payload",
+  "openOnHover",
+  "delay",
+  "closeDelay",
+]
 
 const CONTENT_DESKTOP_ONLY = [
   "side",
@@ -125,44 +148,99 @@ function usePopoverDrawer() {
   return context
 }
 
-type PopoverDrawerProps = Omit<
-  React.ComponentProps<typeof Popover>,
-  "handle" | "triggerId" | "defaultTriggerId"
-> & {
+type PopoverDrawerProps = React.ComponentProps<typeof Popover> & {
   drawer?: Override<React.ComponentProps<typeof Drawer>>
 }
 
-function PopoverDrawer({ drawer, children, ...props }: PopoverDrawerProps) {
+function PopoverDrawer({
+  drawer,
+  open: openProp,
+  defaultOpen = false,
+  onOpenChange,
+  children,
+  ...props
+}: PopoverDrawerProps) {
   const isMobile = useIsMobile()
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
+  const open = openProp ?? uncontrolledOpen
   const contextValue = React.useMemo(() => ({ isMobile }), [isMobile])
+
+  const handleOpenChange = React.useCallback(
+    (nextOpen: boolean, ...details: unknown[]) => {
+      if (callOpenChange(onOpenChange, [nextOpen, ...details])) {
+        setUncontrolledOpen(nextOpen)
+      }
+    },
+    [onOpenChange]
+  )
 
   return (
     <PopoverDrawerContext.Provider value={contextValue}>
       {isMobile ? (
-        <Drawer {...toMobileRootProps(props, drawer)}>{children}</Drawer>
+        <Drawer
+          {...toMobileRootProps(
+            { ...props, open, onOpenChange: handleOpenChange },
+            drawer,
+            ROOT_DESKTOP_ONLY
+          )}
+        >
+          {children}
+        </Drawer>
       ) : (
-        <Popover {...props}>{children}</Popover>
+        <Popover {...props} open={open} onOpenChange={handleOpenChange}>
+          {children}
+        </Popover>
       )}
     </PopoverDrawerContext.Provider>
   )
 }
 
-type PopoverDrawerTriggerProps = Omit<
-  React.ComponentProps<typeof PopoverTrigger>,
-  "handle"
-> & {
+type PopoverDrawerTriggerProps = React.ComponentProps<typeof PopoverTrigger> & {
   drawer?: Override<React.ComponentProps<typeof DrawerTrigger>>
 }
 
 function PopoverDrawerTrigger({ drawer, ...props }: PopoverDrawerTriggerProps) {
-  const { isMobile } = usePopoverDrawer()
+  const context = React.useContext(PopoverDrawerContext)
 
-  if (isMobile) {
+  if (context?.isMobile) {
     return (
       <DrawerTrigger {...toMobileProps(props, drawer, TRIGGER_DESKTOP_ONLY)} />
     )
   }
   return <PopoverTrigger {...props} />
+}
+
+type PopoverDrawerAnchorProps = typeof PopoverParts extends {
+  PopoverAnchor: infer Anchor extends React.ElementType
+}
+  ? React.ComponentProps<Anchor>
+  : never
+
+function PopoverDrawerAnchor(props: PopoverDrawerAnchorProps) {
+  const { isMobile } = usePopoverDrawer()
+  const anchorProps = props as React.ComponentProps<"div"> & {
+    asChild?: boolean
+  }
+
+  if (!isMobile && PopoverAnchor) {
+    return <PopoverAnchor {...anchorProps} />
+  }
+
+  const { asChild, children, ...rest } = anchorProps
+
+  if (asChild && React.isValidElement<React.ComponentProps<"div">>(children)) {
+    const childProps: React.ComponentProps<"div"> = children.props
+    return React.cloneElement(children, {
+      ...rest,
+      ...childProps,
+      className: cn(rest.className, childProps.className),
+    })
+  }
+  return (
+    <div data-slot="popover-anchor" {...rest}>
+      {children}
+    </div>
+  )
 }
 
 type PopoverDrawerContentProps = React.ComponentProps<typeof PopoverContent> & {
@@ -177,9 +255,24 @@ function PopoverDrawerContent({
   const { isMobile } = usePopoverDrawer()
 
   if (isMobile) {
+    const { className } = props as { className?: unknown }
+    const bodyClassName = typeof className === "string" ? className : undefined
+    const desktopOnly =
+      bodyClassName === undefined
+        ? CONTENT_DESKTOP_ONLY
+        : [...CONTENT_DESKTOP_ONLY, "className"]
+
     return (
-      <DrawerContent {...toMobileProps(props, drawer, CONTENT_DESKTOP_ONLY)}>
-        {children}
+      <DrawerContent {...toMobileProps(props, drawer, desktopOnly)}>
+        <div
+          data-slot="popover-drawer-body"
+          className={cn(
+            "mx-auto flex min-h-0 w-full flex-1 flex-col gap-2.5 overflow-y-auto p-4",
+            bodyClassName
+          )}
+        >
+          {children}
+        </div>
       </DrawerContent>
     )
   }
@@ -190,13 +283,24 @@ type PopoverDrawerHeaderProps = React.ComponentProps<typeof PopoverHeader> & {
   drawer?: Override<React.ComponentProps<typeof DrawerHeader>>
 }
 
-function PopoverDrawerHeader({ drawer, ...props }: PopoverDrawerHeaderProps) {
+function PopoverDrawerHeader({
+  drawer,
+  className,
+  ...props
+}: PopoverDrawerHeaderProps) {
   const { isMobile } = usePopoverDrawer()
 
   if (isMobile) {
-    return <DrawerHeader {...toMobileProps(props, drawer)} />
+    return (
+      <DrawerHeader
+        {...toMobileProps(
+          { className: cn("p-0", className), ...props },
+          drawer
+        )}
+      />
+    )
   }
-  return <PopoverHeader {...props} />
+  return <PopoverHeader className={className} {...props} />
 }
 
 type PopoverDrawerFooterProps = React.ComponentProps<"div"> & {
@@ -211,15 +315,19 @@ function PopoverDrawerFooter({
   const { isMobile } = usePopoverDrawer()
 
   if (isMobile) {
-    return <DrawerFooter {...toMobileProps({ className, ...props }, drawer)} />
+    return (
+      <DrawerFooter
+        {...toMobileProps(
+          { className: cn("p-0", className), ...props },
+          drawer
+        )}
+      />
+    )
   }
   return (
     <div
       data-slot="popover-footer"
-      className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-        className
-      )}
+      className={cn("flex justify-end gap-2", className)}
       {...props}
     />
   )
@@ -258,19 +366,11 @@ function PopoverDrawerDescription({
 
 export {
   PopoverDrawer,
+  PopoverDrawerAnchor,
   PopoverDrawerContent,
   PopoverDrawerDescription,
   PopoverDrawerFooter,
   PopoverDrawerHeader,
   PopoverDrawerTitle,
   PopoverDrawerTrigger,
-}
-export type {
-  PopoverDrawerContentProps,
-  PopoverDrawerDescriptionProps,
-  PopoverDrawerFooterProps,
-  PopoverDrawerHeaderProps,
-  PopoverDrawerProps,
-  PopoverDrawerTitleProps,
-  PopoverDrawerTriggerProps,
 }

@@ -35,7 +35,7 @@
       "name": "popover-drawer",
       "type": "registry:ui",
       "title": "Popover Drawer",
-      "description": "A responsive Popover: an anchored Popover at desktop that becomes a swipeable Drawer below 768px. Drop-in replacement for the shadcn Popover on Base UI or Radix: desktop props 1:1 on the root and every part, plus a drawer={{}} override typed on your Drawer.",
+      "description": "A responsive Popover: an anchored Popover at desktop that becomes a swipeable Drawer below 768px. Drop-in replacement for the shadcn Popover on Base UI or Radix: desktop props 1:1 on the root and every part, Anchor included on Radix, open state kept across the breakpoint, plus a drawer={{}} override typed on your Drawer.",
       "dependencies": [],
       "registryDependencies": ["popover", "drawer", "use-mobile"],
       "files": [

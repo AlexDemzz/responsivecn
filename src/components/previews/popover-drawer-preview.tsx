@@ -4,15 +4,19 @@ import {
   PopoverDrawer,
   PopoverDrawerContent,
   PopoverDrawerDescription,
-  PopoverDrawerFooter,
   PopoverDrawerHeader,
   PopoverDrawerTitle,
   PopoverDrawerTrigger,
 } from "../../../registry/popover-drawer/popover-drawer"
 
+const DIMENSIONS = [
+  { id: "popover-drawer-preview-width", label: "Width", value: "100%" },
+  { id: "popover-drawer-preview-height", label: "Height", value: "25px" },
+]
+
 // Live preview for the PopoverDrawer docs page. It renders the real registry
-// component: a filter popover with a Footer — the part that is
-// a styled div at desktop and a real DrawerFooter below 768px.
+// component with the children of the shadcn Popover demo, unchanged: the
+// Content pads them on both sides.
 export function PopoverDrawerPreview() {
   const isMobile = useIsMobile()
 
@@ -22,35 +26,40 @@ export function PopoverDrawerPreview() {
         <PopoverDrawerTrigger
           className={buttonVariants({ variant: "outline" })}
         >
-          Filters
+          Open popover
         </PopoverDrawerTrigger>
-        <PopoverDrawerContent>
+        <PopoverDrawerContent className="w-80">
           <PopoverDrawerHeader>
-            <PopoverDrawerTitle>Filters</PopoverDrawerTitle>
+            <PopoverDrawerTitle>Dimensions</PopoverDrawerTitle>
             <PopoverDrawerDescription>
-              Narrow down the results.
+              Set the dimensions for the layer.
             </PopoverDrawerDescription>
           </PopoverDrawerHeader>
-          <div className="grid gap-2 px-4 text-sm md:px-0">
-            {["Open issues", "Assigned to me", "Has label"].map((label) => (
-              <label key={label} className="flex items-center gap-2">
-                <input type="checkbox" className="accent-primary" />
-                {label}
-              </label>
+          <div className="grid gap-2">
+            {DIMENSIONS.map(({ id, label, value }) => (
+              <div
+                key={id}
+                className="grid grid-cols-3 items-center gap-4 text-sm"
+              >
+                <label htmlFor={id} className="font-medium">
+                  {label}
+                </label>
+                <input
+                  id={id}
+                  defaultValue={value}
+                  className="col-span-2 h-8 rounded-md border border-input bg-transparent px-2.5 outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                />
+              </div>
             ))}
           </div>
-          <PopoverDrawerFooter>
-            <button type="button" className={buttonVariants({ size: "sm" })}>
-              Apply
-            </button>
-          </PopoverDrawerFooter>
         </PopoverDrawerContent>
       </PopoverDrawer>
       <p className="text-xs text-muted-foreground">
         {isMobile
-          ? "Below 768px — opens as a modal Drawer (the Drawer's own default)."
+          ? "Below 768px — opens as a modal Drawer."
           : "At 768px and up — opens as a non-modal anchored Popover."}{" "}
-        Resize the window across 768px and reopen to see the swap.
+        Resize the window across 768px while it is open: it stays open on the
+        other side.
       </p>
     </div>
   )

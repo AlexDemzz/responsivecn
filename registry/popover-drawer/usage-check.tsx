@@ -7,6 +7,7 @@
 
 import * as React from "react"
 
+import * as InstalledPopover from "@/components/ui/popover"
 import {
   Popover,
   PopoverContent,
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/popover"
 import {
   PopoverDrawer,
+  PopoverDrawerAnchor,
   PopoverDrawerContent,
   PopoverDrawerDescription,
   PopoverDrawerFooter,
@@ -36,22 +38,33 @@ type DesktopProps<Part extends React.ElementType> = Omit<
   "drawer"
 >
 
+// PopoverAnchor ships with the Radix wrapper only: the Anchor part takes its
+// props where it exists, and accepts nothing where it does not.
+type AnchorContract = typeof InstalledPopover extends {
+  PopoverAnchor: infer Anchor extends React.ElementType
+}
+  ? SameProps<
+      Parameters<typeof PopoverDrawerAnchor>[0],
+      React.ComponentProps<Anchor>
+    >
+  : [Parameters<typeof PopoverDrawerAnchor>[0]] extends [never]
+    ? true
+    : false
+
 // The drop-in contract: every part takes exactly the installed desktop
 // wrapper's props (render on Base UI, asChild on Radix), whatever the base.
 export type DropIn = [
+  Expect<AnchorContract>,
   Expect<
     SameProps<
       DesktopProps<typeof PopoverDrawer>,
-      Omit<
-        React.ComponentProps<typeof Popover>,
-        "handle" | "triggerId" | "defaultTriggerId"
-      >
+      React.ComponentProps<typeof Popover>
     >
   >,
   Expect<
     SameProps<
       DesktopProps<typeof PopoverDrawerTrigger>,
-      Omit<React.ComponentProps<typeof PopoverTrigger>, "handle">
+      React.ComponentProps<typeof PopoverTrigger>
     >
   >,
   Expect<
