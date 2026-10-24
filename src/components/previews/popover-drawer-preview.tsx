@@ -8,10 +8,10 @@ import {
   PopoverDrawerHeader,
   PopoverDrawerTitle,
   PopoverDrawerTrigger,
-} from "../../../registry/base/popover-drawer/popover-drawer"
+} from "../../../registry/popover-drawer/popover-drawer"
 
 // Live preview for the PopoverDrawer docs page. It renders the real registry
-// component (Base UI side): a filter popover with a Footer — the part that is
+// component: a filter popover with a Footer — the part that is
 // a styled div at desktop and a real DrawerFooter below 768px.
 export function PopoverDrawerPreview() {
   const isMobile = useIsMobile()
@@ -19,7 +19,9 @@ export function PopoverDrawerPreview() {
   return (
     <div className="not-prose flex flex-col items-center gap-4 rounded-xl border p-10">
       <PopoverDrawer>
-        <PopoverDrawerTrigger className={buttonVariants({ variant: "outline" })}>
+        <PopoverDrawerTrigger
+          className={buttonVariants({ variant: "outline" })}
+        >
           Filters
         </PopoverDrawerTrigger>
         <PopoverDrawerContent>

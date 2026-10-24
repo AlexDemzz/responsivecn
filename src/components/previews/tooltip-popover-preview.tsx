@@ -9,10 +9,10 @@ import {
   TooltipPopoverDescription,
   TooltipPopoverTitle,
   TooltipPopoverTrigger,
-} from "../../../registry/base/tooltip-popover/tooltip-popover"
+} from "../../../registry/tooltip-popover/tooltip-popover"
 
 // Live preview for the TooltipPopover docs page. It renders the real registry
-// component (Base UI side): an icon-button infotip — hover Tooltip at desktop,
+// component: an icon-button infotip — hover Tooltip at desktop,
 // press-to-open Popover below 768px, where hover does not exist. The
 // TooltipProvider wrapper is the app-level shadcn convention.
 export function TooltipPopoverPreview() {

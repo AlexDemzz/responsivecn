@@ -1,0 +1,239 @@
+---
+title: SheetDrawer
+description: An edge-anchored Sheet at desktop that becomes a swipeable Drawer below 768px.
+---
+
+A drop-in replacement for the shadcn
+[Sheet](https://ui.shadcn.com/docs/components/sheet): at 768px and up it
+renders the Sheet unchanged; below, the same children render inside a
+[Drawer](https://ui.shadcn.com/docs/components/drawer). The shared mechanism —
+breakpoint, override prop, merge rules, state loss — is documented once in the
+[Introduction](/docs). Resize the window across 768px and reopen to see the
+swap.
+
+<ComponentDemo>
+  <ComponentDemoRender>
+    <SheetDrawerPreview />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
+
+```tsx
+import {
+  SheetDrawer,
+  SheetDrawerClose,
+  SheetDrawerContent,
+  SheetDrawerDescription,
+  SheetDrawerFooter,
+  SheetDrawerHeader,
+  SheetDrawerTitle,
+  SheetDrawerTrigger,
+} from "@/components/ui/sheet-drawer"
+
+export function WorkspaceMenu() {
+  return (
+    <SheetDrawer>
+      <SheetDrawerTrigger>Open menu</SheetDrawerTrigger>
+      {/* side="right" anchors the Sheet at desktop and the mobile Drawer */}
+      <SheetDrawerContent side="right">
+        <SheetDrawerHeader>
+          <SheetDrawerTitle>Workspace</SheetDrawerTitle>
+          <SheetDrawerDescription>
+            The same children render on both sides: a Sheet at 768px and up, a
+            Drawer below.
+          </SheetDrawerDescription>
+        </SheetDrawerHeader>
+        <SheetDrawerFooter>
+          <SheetDrawerClose>Close</SheetDrawerClose>
+        </SheetDrawerFooter>
+      </SheetDrawerContent>
+    </SheetDrawer>
+  )
+}
+```
+
+  </ComponentDemoCode>
+</ComponentDemo>
+
+## Installation
+
+<Tabs items={["Installation", "Migration"]}>
+
+<Tab value="Installation">
+
+<Steps>
+
+<Step>
+
+Configure the `@responsivecn` namespace first — see
+[Installation](/docs#installation) in the Introduction.
+
+</Step>
+
+<Step>
+
+```bash
+npx shadcn@latest add @responsivecn/sheet-drawer
+```
+
+</Step>
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</Tab>
+
+<Tab value="Migration">
+
+<Steps>
+
+<Step>
+
+```bash
+npx shadcn@latest add @responsivecn/sheet-drawer
+```
+
+</Step>
+
+<Step>
+
+Replace the imports — the props are the shadcn Sheet's, unchanged:
+
+```diff
+- import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
++ import { SheetDrawer, SheetDrawerTrigger, SheetDrawerContent } from "@/components/ui/sheet-drawer"
+```
+
+</Step>
+
+<Step>
+
+Rename the tags: every part is its shadcn Sheet counterpart with a `Drawer`
+suffix — `SheetContent` → `SheetDrawerContent`, `SheetHeader` →
+`SheetDrawerHeader`, and so on. Same props, same children.
+
+</Step>
+
+</Steps>
+
+</Tab>
+
+</Tabs>
+
+## Usage
+
+```tsx
+import {
+  SheetDrawer,
+  SheetDrawerClose,
+  SheetDrawerContent,
+  SheetDrawerDescription,
+  SheetDrawerFooter,
+  SheetDrawerHeader,
+  SheetDrawerTitle,
+  SheetDrawerTrigger,
+} from "@/components/ui/sheet-drawer"
+```
+
+```tsx
+<SheetDrawer>
+  <SheetDrawerTrigger>Open menu</SheetDrawerTrigger>
+  <SheetDrawerContent side="right">
+    <SheetDrawerHeader>
+      <SheetDrawerTitle>Workspace</SheetDrawerTitle>
+      <SheetDrawerDescription>Navigate your workspace.</SheetDrawerDescription>
+    </SheetDrawerHeader>
+    <SheetDrawerFooter>
+      <SheetDrawerClose>Close</SheetDrawerClose>
+    </SheetDrawerFooter>
+  </SheetDrawerContent>
+</SheetDrawer>
+```
+
+## Composition
+
+```txt
+SheetDrawer
+├── SheetDrawerTrigger
+└── SheetDrawerContent
+    ├── SheetDrawerHeader
+    │   ├── SheetDrawerTitle
+    │   └── SheetDrawerDescription
+    └── SheetDrawerFooter
+        └── SheetDrawerClose
+```
+
+## `side` and the swipe direction
+
+This pair's specific problem: the Sheet's `side` is a CSS-only prop on the
+**Content**, while the Drawer's direction is a **Root** prop that drives
+gesture physics. When you set `side` explicitly on `SheetDrawerContent`, the
+root picks it up and maps it onto the mobile Drawer, so the drawer anchors to
+the same edge and swipes accordingly. On Base UI, `side` maps to the Drawer's
+`swipeDirection` (`top → "up"`, `right → "right"`, `bottom → "down"`,
+`left → "left"`); on Radix, to Vaul's `direction`, which takes the same four
+values as `side`.
+
+```tsx
+<SheetDrawer>
+  <SheetDrawerTrigger>Open menu</SheetDrawerTrigger>
+  {/* Sheet from the left at desktop, left-swiping Drawer below 768px */}
+  <SheetDrawerContent side="left">{/* … */}</SheetDrawerContent>
+</SheetDrawer>
+```
+
+An explicit `drawer={{ swipeDirection }}` on the root (`drawer={{ direction }}`
+on Radix) wins over the side-derived value:
+
+```tsx
+<SheetDrawer drawer={{ swipeDirection: "down" }}>
+  {/* left Sheet at desktop, bottom Drawer on mobile anyway */}
+  <SheetDrawerContent side="left">{/* … */}</SheetDrawerContent>
+</SheetDrawer>
+```
+
+Two rules to keep in mind:
+
+- **No auto-map when `side` is unset.** Each side keeps its native default —
+  the Sheet opens from the right, the drawer from the bottom. The two are
+  intentionally divergent: a bottom drawer is the natural mobile default, and
+  masking native defaults is exactly what this project
+  [does not do](/docs#the-override-prop).
+- **`side` is read from the root's direct children.** `SheetDrawerContent`
+  must be a direct child of `SheetDrawer` for the mapping to apply — wrap it
+  in your own component and the root cannot see the prop, so the mobile
+  drawer silently falls back to the bottom. Set `drawer={{ swipeDirection }}`
+  (or `direction` on Radix) on the root in that case.
+
+## Not in v1
+
+- **`handle` / `triggerId`**: `Dialog.Handle` and `Drawer.Handle` are distinct
+  classes — a desktop handle cannot drive the mobile primitive, so detached
+  triggers are dropped from this pair.
+- **`showCloseButton` below the breakpoint**: the prop is desktop-only — a
+  drawer dismisses by swipe. It keeps working at 768px and up.
+
+## Radix notes
+
+- `drawer={{}}` is typed on Vaul: `direction`, `dismissible`, `handleOnly`,
+  `snapPoints`, and so on.
+- Radix Dialog moves focus into the popup on open; the Vaul drawer does not
+  by default. Pass `drawer={{ autoFocus: true }}` so the drawer takes focus
+  too. Without it the focused trigger ends up behind `aria-hidden` and the
+  console logs a focus-trap error.
+- Vaul, the drawer library under the Radix Drawer, is no longer maintained
+  upstream. It still works; the Base UI Drawer is the maintained option.
+
+## Learn more
+
+The underlying components are documented upstream: shadcn
+[Sheet](https://ui.shadcn.com/docs/components/sheet) and
+[Drawer](https://ui.shadcn.com/docs/components/drawer), built on
+[Base UI Dialog](https://base-ui.com/react/components/dialog) and
+[Base UI Drawer](https://base-ui.com/react/components/drawer), or on
+[Radix Dialog](https://www.radix-ui.com/primitives/docs/components/dialog) and
+[Vaul](https://vaul.emilkowal.ski/).

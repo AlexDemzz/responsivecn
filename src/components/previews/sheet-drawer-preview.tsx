@@ -9,10 +9,10 @@ import {
   SheetDrawerHeader,
   SheetDrawerTitle,
   SheetDrawerTrigger,
-} from "../../../registry/base/sheet-drawer/sheet-drawer"
+} from "../../../registry/sheet-drawer/sheet-drawer"
 
 // Live preview for the SheetDrawer docs page. It renders the real registry
-// component (Base UI side) with an explicit side="right", so the preview also
+// component with an explicit side="right", so the preview also
 // demonstrates the side→swipeDirection mapping: a right Sheet at desktop, a
 // right-anchored Drawer below 768px.
 export function SheetDrawerPreview() {
@@ -28,8 +28,8 @@ export function SheetDrawerPreview() {
           <SheetDrawerHeader>
             <SheetDrawerTitle>Workspace</SheetDrawerTitle>
             <SheetDrawerDescription>
-              The explicit side=&quot;right&quot; also anchors the mobile
-              Drawer to the right.
+              The explicit side=&quot;right&quot; also anchors the mobile Drawer
+              to the right.
             </SheetDrawerDescription>
           </SheetDrawerHeader>
           <nav className="grid gap-1 px-4 text-sm">

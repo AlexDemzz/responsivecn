@@ -1,0 +1,223 @@
+---
+title: PopoverDrawer
+description: An anchored Popover at desktop that becomes a swipeable Drawer below 768px.
+---
+
+A drop-in replacement for the shadcn
+[Popover](https://ui.shadcn.com/docs/components/popover): at 768px and up it
+renders the Popover unchanged; below, the same children render inside a
+[Drawer](https://ui.shadcn.com/docs/components/drawer). The shared mechanism —
+breakpoint, override prop, merge rules, state loss — is documented once in the
+[Introduction](/docs). Resize the window across 768px and reopen to see the
+swap.
+
+<ComponentDemo>
+  <ComponentDemoRender>
+    <PopoverDrawerPreview />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
+
+```tsx
+import {
+  PopoverDrawer,
+  PopoverDrawerContent,
+  PopoverDrawerDescription,
+  PopoverDrawerFooter,
+  PopoverDrawerHeader,
+  PopoverDrawerTitle,
+  PopoverDrawerTrigger,
+} from "@/components/ui/popover-drawer"
+
+export function Filters() {
+  return (
+    <PopoverDrawer>
+      <PopoverDrawerTrigger>Filters</PopoverDrawerTrigger>
+      <PopoverDrawerContent>
+        <PopoverDrawerHeader>
+          <PopoverDrawerTitle>Filters</PopoverDrawerTitle>
+          <PopoverDrawerDescription>
+            Narrow down the results.
+          </PopoverDrawerDescription>
+        </PopoverDrawerHeader>
+        <PopoverDrawerFooter>
+          <button type="button">Apply</button>
+        </PopoverDrawerFooter>
+      </PopoverDrawerContent>
+    </PopoverDrawer>
+  )
+}
+```
+
+  </ComponentDemoCode>
+</ComponentDemo>
+
+## Installation
+
+<Tabs items={["Installation", "Migration"]}>
+
+<Tab value="Installation">
+
+<Steps>
+
+<Step>
+
+Configure the `@responsivecn` namespace first — see
+[Installation](/docs#installation) in the Introduction.
+
+</Step>
+
+<Step>
+
+```bash
+npx shadcn@latest add @responsivecn/popover-drawer
+```
+
+</Step>
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</Tab>
+
+<Tab value="Migration">
+
+<Steps>
+
+<Step>
+
+```bash
+npx shadcn@latest add @responsivecn/popover-drawer
+```
+
+</Step>
+
+<Step>
+
+Replace the imports — the props are the shadcn Popover's, unchanged:
+
+```diff
+- import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
++ import { PopoverDrawer, PopoverDrawerTrigger, PopoverDrawerContent } from "@/components/ui/popover-drawer"
+```
+
+</Step>
+
+<Step>
+
+Rename the tags: every part is its shadcn Popover counterpart with a `Drawer`
+suffix — `PopoverContent` → `PopoverDrawerContent`, `PopoverTrigger` →
+`PopoverDrawerTrigger`, and so on. Same props, same children.
+
+</Step>
+
+</Steps>
+
+</Tab>
+
+</Tabs>
+
+## Usage
+
+```tsx
+import {
+  PopoverDrawer,
+  PopoverDrawerContent,
+  PopoverDrawerDescription,
+  PopoverDrawerFooter,
+  PopoverDrawerHeader,
+  PopoverDrawerTitle,
+  PopoverDrawerTrigger,
+} from "@/components/ui/popover-drawer"
+```
+
+```tsx
+<PopoverDrawer>
+  <PopoverDrawerTrigger>Filters</PopoverDrawerTrigger>
+  <PopoverDrawerContent>
+    <PopoverDrawerHeader>
+      <PopoverDrawerTitle>Filters</PopoverDrawerTitle>
+      <PopoverDrawerDescription>Narrow down the results.</PopoverDrawerDescription>
+    </PopoverDrawerHeader>
+    <PopoverDrawerFooter>
+      <button type="button">Apply</button>
+    </PopoverDrawerFooter>
+  </PopoverDrawerContent>
+</PopoverDrawer>
+```
+
+## Composition
+
+```txt
+PopoverDrawer
+├── PopoverDrawerTrigger
+└── PopoverDrawerContent
+    ├── PopoverDrawerHeader
+    │   ├── PopoverDrawerTitle
+    │   └── PopoverDrawerDescription
+    └── PopoverDrawerFooter
+```
+
+## The `modal` divergence
+
+This is the one pair whose two sides disagree on modality: a Popover is
+**non-modal** by default, a Drawer is **modal** by default. `PopoverDrawer`
+does not mask that — with no `modal` prop, the same component is a
+light-dismiss anchored popover at desktop and a modal drawer with an overlay
+below 768px. That is each side's native, expected behaviour.
+
+Set `modal` explicitly and it forwards to **both** sides; use the override
+prop to target only the mobile drawer:
+
+```tsx
+{/* explicit modal → forwarded to both Popover and Drawer */}
+<PopoverDrawer modal>{/* … */}</PopoverDrawer>
+
+{/* native defaults on desktop, non-modal drawer on mobile only */}
+<PopoverDrawer drawer={{ modal: false }}>{/* … */}</PopoverDrawer>
+```
+
+## The Footer part
+
+The shadcn Popover ships no footer, but the Drawer's action row is where
+mobile buttons belong. `PopoverDrawerFooter` fills the gap: at desktop it is a
+plain styled `<div>` (a functional fallback — never `null`, so your markup
+survives the viewport change); below the breakpoint it is the real
+`DrawerFooter`.
+
+There is no Close part on this pair — the Popover has none (it light-dismisses
+on outside click), and the drawer dismisses by swipe.
+
+## Desktop-only props
+
+- **Positioning props on the Content** — `side`, `align`, `sideOffset`,
+  `alignOffset`, and on Radix the rest of the Popper surface
+  (`avoidCollisions`, `collisionPadding`, `sticky`, …) — are anchor
+  positioning, which is meaningless on an edge-anchored drawer. They apply at
+  768px and up and are silently dropped below.
+- **Hover props on the Trigger** — `openOnHover`, `delay`, `closeDelay` — have
+  no drawer analog; a drawer has no hover-to-open semantics. Desktop-only as
+  well.
+
+## Radix notes
+
+- A non-modal Vaul drawer stays open when you tap outside it, where the
+  non-modal Popover it replaces light-dismisses: the two non-modal behaviours
+  differ in kind, not just in styling.
+- `PopoverAnchor` is not part of this pair: anchoring has no drawer analog.
+- Vaul, the drawer library under the Radix Drawer, is no longer maintained
+  upstream. It still works; the Base UI Drawer is the maintained option.
+
+## Learn more
+
+The underlying components are documented upstream: shadcn
+[Popover](https://ui.shadcn.com/docs/components/popover) and
+[Drawer](https://ui.shadcn.com/docs/components/drawer), built on
+[Base UI Popover](https://base-ui.com/react/components/popover) and
+[Base UI Drawer](https://base-ui.com/react/components/drawer), or on
+[Radix Popover](https://www.radix-ui.com/primitives/docs/components/popover)
+and [Vaul](https://vaul.emilkowal.ski/).

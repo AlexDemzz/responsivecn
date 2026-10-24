@@ -41,7 +41,7 @@ export function clampWidth(width: number): number {
   return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, Math.round(width)))
 }
 
-const SITE_URL = "https://responsivecn.com"
+const SITE_URL = "https://responsive-cn.dev"
 
 export function npxCommand(item: string): string {
   return `npx shadcn add @responsivecn/${item}`

@@ -37,12 +37,14 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # Steps a–d: validate + build + view/list/add --dry-run + real smoke
-      # install of every item into throwaway Base UI and Radix projects, then
-      # tsc. This is the check that proves "add -> code that compiles".
+      # install of every item into two throwaway projects (shadcn init -b base
+      # and -b radix, nova preset) with the usage-checks, then tsc on both.
+      # This is the check that proves "add -> code that compiles" on each base.
       - name: Verify registry (validate, build, install, typecheck)
         run: bash scripts/verify-registry.sh
 
-      # The zero-cast type contract (registry/**/usage-check.tsx compiled by tsc).
+      # The app + registry sources and usage-checks against the site's own
+      # (Base UI) shadcn wrappers.
       - name: Typecheck the app + registry sources
         run: pnpm run typecheck
 

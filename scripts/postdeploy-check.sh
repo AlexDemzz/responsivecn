@@ -5,21 +5,22 @@
 #
 # Verifies the served contract against a deployed origin:
 #   1. GET /r/registry.json           -> 200 application/json, flat catalog
+#                                        listing exactly the registry.json items
 #   2. `shadcn view <origin>/r/<name>.json` for every item -> resolves
 #   3. GET /r/<unknown>.json          -> real 404 (contract from spec #18)
 #
 # Usage:
 #   scripts/postdeploy-check.sh [BASE_URL]
-#   BASE_URL=https://responsivecn.com scripts/postdeploy-check.sh
+#   BASE_URL=https://responsive-cn.dev scripts/postdeploy-check.sh
 # BASE_URL is the site origin; the registry is served under /r/.
 set -euo pipefail
 
 # shellcheck source=scripts/lib-registry.sh
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib-registry.sh"
 
-BASE_URL="${1:-${BASE_URL:-https://responsivecn.com}}"
+BASE_URL="${1:-${BASE_URL:-https://responsive-cn.dev}}"
 BASE_URL="${BASE_URL%/}"                       # strip trailing slash
-REG_URL="$BASE_URL/$REGISTRY_PATH"             # e.g. https://responsivecn.com/r
+REG_URL="$BASE_URL/$REGISTRY_PATH"             # e.g. https://responsive-cn.dev/r
 CATALOG_URL="$REG_URL/registry.json"
 
 log "Post-deploy check against $BASE_URL"
@@ -50,7 +51,12 @@ node -e '
 ITEMS=()
 while IFS= read -r name; do [ -n "$name" ] && ITEMS+=("$name"); done < "$CATALOG.names"
 rm -f "$CATALOG.names"
-[ "${#ITEMS[@]}" -gt 0 ] || die "no items in served catalog"
+# The live catalog must list exactly the items of the repo's registry.json
+# (one base-agnostic item per pair, no per-base variants).
+EXPECTED="$(registry_item_names "$REPO_ROOT/registry.json" | sort | tr '\n' ' ')"
+ACTUAL="$(printf '%s\n' ${ITEMS[@]+"${ITEMS[@]}"} | sort | tr '\n' ' ')"
+[ "$ACTUAL" = "$EXPECTED" ] \
+  || die "served catalog lists [$ACTUAL], expected [$EXPECTED]"
 ok "catalog is flat with ${#ITEMS[@]} items: ${ITEMS[*]}"
 
 # 2. Each item resolves via the CLI against the live origin.

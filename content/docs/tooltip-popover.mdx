@@ -1,0 +1,233 @@
+---
+title: TooltipPopover
+description: A hover Tooltip at desktop that becomes a press-to-open Popover below 768px.
+---
+
+A drop-in replacement for the shadcn
+[Tooltip](https://ui.shadcn.com/docs/components/tooltip): at 768px and up it
+renders the Tooltip unchanged; below, the same children render inside a
+[Popover](https://ui.shadcn.com/docs/components/popover). This pair exists
+because **hover does not exist on touch** — a tooltip is simply dead under a
+finger, and swapping it for a press-to-open popover is the fix Base UI itself
+prescribes. The shared mechanism — breakpoint, override prop, merge rules,
+state loss — is documented once in the [Introduction](/docs). Resize the
+window across 768px to see the swap.
+
+<ComponentDemo>
+  <ComponentDemoRender>
+    <TooltipPopoverPreview />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
+
+```tsx
+import { InfoIcon } from "lucide-react"
+
+import {
+  TooltipPopover,
+  TooltipPopoverContent,
+  TooltipPopoverDescription,
+  TooltipPopoverTitle,
+  TooltipPopoverTrigger,
+} from "@/components/ui/tooltip-popover"
+
+export function ResponseRateInfo() {
+  return (
+    <TooltipPopover>
+      <TooltipPopoverTrigger aria-label="About response rate">
+        <InfoIcon />
+      </TooltipPopoverTrigger>
+      <TooltipPopoverContent>
+        <TooltipPopoverTitle>Response rate</TooltipPopoverTitle>
+        <TooltipPopoverDescription>
+          The share of messages you reply to within 24 hours.
+        </TooltipPopoverDescription>
+      </TooltipPopoverContent>
+    </TooltipPopover>
+  )
+}
+```
+
+  </ComponentDemoCode>
+</ComponentDemo>
+
+## Installation
+
+<Tabs items={["Installation", "Migration"]}>
+
+<Tab value="Installation">
+
+<Steps>
+
+<Step>
+
+Configure the `@responsivecn` namespace first — see
+[Installation](/docs#installation) in the Introduction.
+
+</Step>
+
+<Step>
+
+```bash
+npx shadcn@latest add @responsivecn/tooltip-popover
+```
+
+</Step>
+
+<Step>
+
+Update the import paths to match your project setup.
+
+</Step>
+
+</Steps>
+
+</Tab>
+
+<Tab value="Migration">
+
+<Steps>
+
+<Step>
+
+```bash
+npx shadcn@latest add @responsivecn/tooltip-popover
+```
+
+</Step>
+
+<Step>
+
+Replace the imports — the props are the shadcn Tooltip's, unchanged:
+
+```diff
+- import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
++ import { TooltipPopover, TooltipPopoverTrigger, TooltipPopoverContent } from "@/components/ui/tooltip-popover"
+```
+
+</Step>
+
+<Step>
+
+Rename the tags: every part is its shadcn Tooltip counterpart with a `Popover`
+suffix — `TooltipContent` → `TooltipPopoverContent`, `TooltipTrigger` →
+`TooltipPopoverTrigger`, and so on. Same props, same children.
+
+</Step>
+
+</Steps>
+
+</Tab>
+
+</Tabs>
+
+## Usage
+
+```tsx
+import {
+  TooltipPopover,
+  TooltipPopoverContent,
+  TooltipPopoverDescription,
+  TooltipPopoverTitle,
+  TooltipPopoverTrigger,
+} from "@/components/ui/tooltip-popover"
+```
+
+```tsx
+<TooltipPopover>
+  <TooltipPopoverTrigger>Response rate</TooltipPopoverTrigger>
+  <TooltipPopoverContent>
+    <TooltipPopoverTitle>Response rate</TooltipPopoverTitle>
+    <TooltipPopoverDescription>
+      The share of messages you reply to within 24 hours.
+    </TooltipPopoverDescription>
+  </TooltipPopoverContent>
+</TooltipPopover>
+```
+
+## Composition
+
+```txt
+TooltipPopover
+├── TooltipPopoverTrigger
+└── TooltipPopoverContent
+    ├── TooltipPopoverTitle
+    └── TooltipPopoverDescription
+```
+
+## The override prop is `popover={{}}`
+
+The override prop is named after the mobile side of the pair — here that is
+the Popover, so this is the one pair whose override is `popover={{}}` rather
+than `drawer={{}}`:
+
+```tsx
+<TooltipPopover popover={{ modal: true }}>
+  <TooltipPopoverTrigger popover={{ openOnHover: true }}>
+    Info
+  </TooltipPopoverTrigger>
+  <TooltipPopoverContent popover={{ side: "bottom", sideOffset: 8 }}>
+    {/* … */}
+  </TooltipPopoverContent>
+</TooltipPopover>
+```
+
+On Base UI, `popover={{ openOnHover: true }}` on the Trigger opts the mobile
+Popover into hover-opening on hybrid devices — Base UI's own infotip
+recommendation.
+
+One consequence of claiming that name: `popover` is also a native HTML global
+attribute (the Popover API — `popover="auto"`). The parts drop the native
+attribute in favour of the override namespace, so you cannot pass the HTML
+`popover` attribute through this component.
+
+## Title and Description
+
+The Tooltip primitive has no Title or Description parts — a tooltip is a
+transient hint, not a labelled surface. `TooltipPopoverTitle` and
+`TooltipPopoverDescription` are therefore this pair's fallback parts: at
+desktop they render as plain styled elements (never `null`), and below the
+breakpoint they become the real `PopoverTitle` and `PopoverDescription`,
+giving touch users the accessible structure a tooltip cannot provide.
+
+## TooltipProvider
+
+`TooltipProvider` stays the app-level shadcn convention: keep one at the root
+of your app for instant, grouped tooltips at desktop. It renders no DOM, so it is harmless around the mobile Popover
+branch.
+
+## Placement defaults
+
+When `side` is unset on the Content, each side keeps its native default: the
+Tooltip opens on **top**, the Popover on the **bottom**. As everywhere else,
+native defaults are respected rather than masked — set `side` explicitly (or
+`popover={{ side }}` for mobile only) if you need both to match.
+
+## Accessibility
+
+Give an icon-only trigger an `aria-label` that matches the content — the
+trigger is a plain button on both sides, and below the breakpoint nothing
+opens until it is pressed, so the label is all a screen reader gets up front:
+
+```tsx
+<TooltipPopoverTrigger aria-label="About response rate">
+  <InfoIcon />
+</TooltipPopoverTrigger>
+```
+
+## Radix notes
+
+- A Radix tooltip is dead under a finger: the trigger ignores touch pointers,
+  and a tap closes an open tooltip. The mobile Popover fixes that.
+- The Radix Popover trigger is click-only, so the mobile side is strictly
+  press-to-open: there is no `openOnHover` opt-in.
+- Radix needs the `TooltipProvider` above for the desktop Tooltip to work.
+
+## Learn more
+
+The underlying components are documented upstream: shadcn
+[Tooltip](https://ui.shadcn.com/docs/components/tooltip) and
+[Popover](https://ui.shadcn.com/docs/components/popover), built on
+[Base UI Tooltip](https://base-ui.com/react/components/tooltip) and
+[Base UI Popover](https://base-ui.com/react/components/popover), or on
+[Radix Tooltip](https://www.radix-ui.com/primitives/docs/components/tooltip)
+and [Radix Popover](https://www.radix-ui.com/primitives/docs/components/popover).

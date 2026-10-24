@@ -312,16 +312,6 @@ function CopySplitButton({ pair }: { pair: Pair }) {
   const entries = [
     { key: "pnpm", label: "pnpm", value: pnpmCommand(pair.slug) },
     { key: "url", label: "Item URL", value: itemUrl(pair.slug) },
-    {
-      key: "radix-npx",
-      label: "Radix (npx)",
-      value: npxCommand(`${pair.slug}-radix`),
-    },
-    {
-      key: "radix-url",
-      label: "Radix item URL",
-      value: itemUrl(`${pair.slug}-radix`),
-    },
   ]
 
   return (

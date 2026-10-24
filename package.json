@@ -13,7 +13,7 @@
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx}\"",
     "check": "prettier --check \"**/*.{ts,tsx,js,jsx}\"",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p registry/radix/tsconfig.json",
+    "typecheck": "tsc --noEmit",
     "deploy": "pnpm run build && wrangler deploy",
     "cf-typegen": "wrangler types",
     "postinstall": "fumadocs-mdx",

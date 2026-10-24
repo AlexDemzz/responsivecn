@@ -8,7 +8,7 @@ import {
   DialogDrawerHeader,
   DialogDrawerTitle,
   DialogDrawerTrigger,
-} from "../../../registry/base/dialog-drawer/dialog-drawer"
+} from "../../../registry/dialog-drawer/dialog-drawer"
 
 // The landing hero demo: a real DialogDrawer straight from the registry.
 // `drawer={{ showSwipeHandle: true }}` doubles as a live example of the

@@ -16,15 +16,19 @@ renders the mobile one below the breakpoint. Four pairs exist:
 
 | Pair              | Responsive component                       |
 | ----------------- | ------------------------------------------ |
-| Dialog → Drawer   | [`DialogDrawer`](/docs/base/dialog-drawer)      |
-| Sheet → Drawer    | [`SheetDrawer`](/docs/base/sheet-drawer)        |
-| Popover → Drawer  | [`PopoverDrawer`](/docs/base/popover-drawer)    |
-| Tooltip → Popover | [`TooltipPopover`](/docs/base/tooltip-popover)  |
+| Dialog → Drawer   | [`DialogDrawer`](/docs/dialog-drawer)      |
+| Sheet → Drawer    | [`SheetDrawer`](/docs/sheet-drawer)        |
+| Popover → Drawer  | [`PopoverDrawer`](/docs/popover-drawer)    |
+| Tooltip → Popover | [`TooltipPopover`](/docs/tooltip-popover)  |
 
-Each pair ships on both bases of the ecosystem — **Base UI** (shadcn's default)
-and **Radix**. Every component page has a **Base UI / Radix** tab at the top:
-the API is identical across the two, only the registry item you install
-changes.
+## Bases
+
+Each component works on **Base UI** (shadcn's default) and **Radix**: whatever
+shadcn base you installed. It is one file that builds on your own shadcn
+components (`@/components/ui/dialog`, `drawer`, …), so its props are those of
+your Dialog, Sheet, Popover or Tooltip, `render` on Base UI and `asChild` on
+Radix. **React Aria** is not supported yet: its shadcn components have a
+different part structure, so a drop-in replacement cannot map onto them.
 
 ## Installation
 
@@ -32,16 +36,13 @@ changes.
 npx shadcn@latest add @responsivecn/dialog-drawer
 ```
 
-On a Radix project, install the `-radix` item instead
-(`@responsivecn/dialog-drawer-radix`).
-
 <Callout title="Namespace resolution">
 
 Until the `@responsivecn` namespace resolves globally in the shadcn CLI, the
 full URL form works everywhere:
 
 ```bash
-npx shadcn@latest add https://responsivecn.com/r/dialog-drawer.json
+npx shadcn@latest add https://responsive-cn.dev/r/dialog-drawer.json
 ```
 
 </Callout>
@@ -69,8 +70,8 @@ Every part is its desktop counterpart with the mobile side's name appended —
 Mobile behaviour is tuned through the **override prop**, named after the
 mobile side of the pair: `drawer={{...}}` on `DialogDrawer`, `SheetDrawer` and
 `PopoverDrawer`; `popover={{...}}` on `TooltipPopover`. It exists on the root
-**and on every part**, and is typed 1:1 on the mobile counterpart's API — no
-casts.
+**and on every part**, and is typed 1:1 on your installed mobile component's
+API (Base UI Drawer or Vaul) — no casts.
 
 ```tsx
 <DialogDrawer drawer={{ snapPoints: [0.5, 1] }}>

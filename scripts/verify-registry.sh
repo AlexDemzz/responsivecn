@@ -7,9 +7,11 @@
 #   a. `shadcn registry validate`            — schema conformance
 #   b. `shadcn build`                        — artifacts to a throwaway output dir
 #   c. `view` / `list` / `add --dry-run`     — every item, against the built output
-#   d. REAL install of every item into two throwaway projects (Base UI + Radix),
-#      routed by slug, then `tsc --noEmit`   — the only check that proves
-#                                              "add -> code that compiles".
+#   d. REAL install of every item into two throwaway projects scaffolded by
+#      `shadcn init -b base|radix -p nova`, plus each item's usage-check, then
+#      `tsc --noEmit`                         — the only check that proves
+#                                              "add -> code that compiles" on
+#                                              both bases from ONE source file.
 #
 # Items are ENUMERATED from registry.json — items added later are covered with
 # zero edits to this script or the workflow.
@@ -34,128 +36,6 @@ cleanup() {
 trap cleanup EXIT
 
 BUILD_DIR="$WORK/r"
-
-# ---------------------------------------------------------------------------
-# Throwaway project scaffolding
-# ---------------------------------------------------------------------------
-# Minimal Vite-shaped React+TS project the shadcn CLI treats as an install
-# target. Two styles: base-nova (Base UI) and new-york-v4 (Radix) — the CLI's
-# getBase heuristic reads the style prefix, so bare registryDependencies
-# (dialog, drawer, ...) resolve to the correct base's primitives.
-scaffold_project() {
-  local dir="$1" base="$2"
-  mkdir -p "$dir/src/lib" "$dir/src/hooks" "$dir/src/components/ui"
-
-  local css deps style
-  if [ "$base" = radix ]; then
-    style="new-york-v4"
-    css="src/index.css"
-    deps='"class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^1.24.0",
-    "radix-ui": "^1.6.2",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "tailwind-merge": "^3.6.0",
-    "vaul": "^1.1.2"'
-  else
-    style="base-nova"
-    css="src/styles.css"
-    deps='"@base-ui/react": "^1.6.0",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^1.24.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "tailwind-merge": "^3.6.0"'
-  fi
-
-  cat > "$dir/package.json" <<EOF
-{
-  "name": "smoke-$base",
-  "private": true,
-  "type": "module",
-  "scripts": { "typecheck": "tsc --noEmit" },
-  "dependencies": {
-    $deps
-  },
-  "devDependencies": {
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "typescript": "^6"
-  }
-}
-EOF
-
-  cat > "$dir/tsconfig.json" <<'EOF'
-{
-  "include": ["src", "*.ts", "*.tsx"],
-  "compilerOptions": {
-    "target": "ES2022",
-    "jsx": "react-jsx",
-    "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "paths": { "@/*": ["./src/*"] }
-  }
-}
-EOF
-
-  cat > "$dir/components.json" <<EOF
-{
-  "\$schema": "https://ui.shadcn.com/schema.json",
-  "style": "$style",
-  "rsc": false,
-  "tsx": true,
-  "tailwind": { "config": "", "css": "$css", "baseColor": "neutral", "cssVariables": true },
-  "iconLibrary": "lucide",
-  "aliases": {
-    "components": "@/components",
-    "utils": "@/lib/utils",
-    "ui": "@/components/ui",
-    "lib": "@/lib",
-    "hooks": "@/hooks"
-  }
-}
-EOF
-
-  cat > "$dir/src/lib/utils.ts" <<'EOF'
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
-}
-EOF
-
-  # Standard shadcn use-mobile hook (768px). `add` overwrites it with the
-  # official copy; seeding it means the components resolve during dry-run too.
-  cat > "$dir/src/hooks/use-mobile.ts" <<'EOF'
-import * as React from "react"
-
-const MOBILE_BREAKPOINT = 768
-
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
-
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
-
-  return !!isMobile
-}
-EOF
-
-  printf '@import "tailwindcss";\n' > "$dir/$css"
-}
 
 # After installing items, some upstream @shadcn primitives import ui/* siblings
 # they don't declare as registryDependencies (e.g. new-york-v4 `dialog` imports
@@ -196,17 +76,15 @@ log "Phase B — shadcn build -> $BUILD_DIR"
 "${SHADCN[@]}" build -o "$BUILD_DIR" >/dev/null
 [ -f "$BUILD_DIR/registry.json" ] || die "build produced no catalog (registry.json)"
 
-# Enumerate the built catalog and split by base (portable to bash 3.2 — no mapfile).
+# Enumerate the built catalog (portable to bash 3.2 — no mapfile).
 ITEMS=()
 while IFS= read -r name; do [ -n "$name" ] && ITEMS+=("$name"); done \
   < <(registry_item_names "$BUILD_DIR/registry.json")
 [ "${#ITEMS[@]}" -gt 0 ] || die "no items enumerated from built catalog"
-BASE_ITEMS=(); RADIX_ITEMS=()
 for name in "${ITEMS[@]}"; do
   [ -f "$BUILD_DIR/$name.json" ] || die "built item missing: $name.json"
-  if [ "$(item_base "$name")" = radix ]; then RADIX_ITEMS+=("$name"); else BASE_ITEMS+=("$name"); fi
 done
-ok "built ${#ITEMS[@]} items — base: ${BASE_ITEMS[*]:-none} | radix: ${RADIX_ITEMS[*]:-none}"
+ok "built ${#ITEMS[@]} items: ${ITEMS[*]}"
 
 # ---------------------------------------------------------------------------
 # Phase C — contract checks against the BUILT output
@@ -250,46 +128,44 @@ kill "$SERVER_PID" 2>/dev/null || true; SERVER_PID=""
 ok "list enumerated ${#ITEMS[@]} items from the served catalog"
 
 # ---------------------------------------------------------------------------
-# Phase D — real smoke install + tsc, per base
+# Phase D — real smoke install + tsc, once per shadcn base, same items
 # ---------------------------------------------------------------------------
 smoke_base() {
-  local base="$1"; shift
-  local items=("$@")
-  [ "${#items[@]}" -gt 0 ] || { warn "no $base items to smoke; skipping"; return 0; }
-
+  local base="$1"
   local dir="$WORK/smoke-$base"
-  log "Phase D ($base) — scaffold + install ${#items[@]} items"
-  scaffold_project "$dir" "$base"
+  log "Phase D ($base) — shadcn init -b $base -p nova"
+  # init scaffolds the Vite project and installs its deps; `add` runs alone
+  # afterwards (combining them in one init call skips the item install).
+  ( cd "$WORK" && "${SHADCN[@]}" init -t vite -b "$base" -p nova \
+      -n "smoke-$base" --no-monorepo --yes >/dev/null ) \
+    || die "$base: shadcn init failed"
 
-  # Pre-install deps so `add` has them satisfied (no per-item npm install) and
-  # tsc has types.
-  ( cd "$dir" && npm install --no-audit --no-fund --silent )
-
-  # c (continued): `add --dry-run` per item, on the clean scaffold — previews
-  # resolution without writing files.
-  for name in "${items[@]}"; do
+  for name in "${ITEMS[@]}"; do
     "${SHADCN[@]}" add "$BUILD_DIR/$name.json" --cwd "$dir" --dry-run --yes >/dev/null \
-      || die "add --dry-run failed: $name"
+      || die "$base: add --dry-run failed: $name"
   done
-  ok "$base: add --dry-run previewed all ${#items[@]} items"
+  ok "$base: add --dry-run previewed all ${#ITEMS[@]} items"
 
-  # d: real install of every item, then backfill dangling primitives.
-  for name in "${items[@]}"; do
+  for name in "${ITEMS[@]}"; do
     "${SHADCN[@]}" add "$BUILD_DIR/$name.json" --cwd "$dir" --overwrite --yes >/dev/null \
-      || die "add failed: $name"
+      || die "$base: add failed: $name"
   done
   backfill_ui_primitives "$dir"
 
-  # Pick up anything `add` appended to package.json, then typecheck the result.
-  ( cd "$dir" && npm install --no-audit --no-fund --silent )
+  # The usage-checks hold the type contract (desktop props 1:1 on this base);
+  # they import the component from a sibling path, as installed.
+  for name in "${ITEMS[@]}"; do
+    local check="$REPO_ROOT/registry/$name/usage-check.tsx"
+    [ -f "$check" ] && cp "$check" "$dir/src/components/ui/$name-usage-check.tsx"
+  done
+
   log "Phase D ($base) — tsc --noEmit"
-  ( cd "$dir" && npx tsc --noEmit ) || die "$base smoke project failed tsc"
-  ok "$base: installed ${#items[@]} items -> tsc clean"
+  ( cd "$dir" && npx tsc --noEmit -p tsconfig.app.json ) || die "$base smoke project failed tsc"
+  ok "$base: installed ${#ITEMS[@]} items -> tsc clean"
 }
 
-# Empty-array-safe expansion (bash 3.2 + set -u errors on "${empty[@]}").
-smoke_base base  ${BASE_ITEMS[@]+"${BASE_ITEMS[@]}"}
-smoke_base radix ${RADIX_ITEMS[@]+"${RADIX_ITEMS[@]}"}
+smoke_base base
+smoke_base radix
 
 echo
-ok "Registry contract verified: ${#ITEMS[@]} items validated, built, viewed, listed, installed (base+radix), and typechecked."
+ok "Registry contract verified: ${#ITEMS[@]} items validated, built, viewed, listed, installed (Base UI + Radix), and typechecked."

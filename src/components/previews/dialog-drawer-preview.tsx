@@ -9,10 +9,10 @@ import {
   DialogDrawerHeader,
   DialogDrawerTitle,
   DialogDrawerTrigger,
-} from "../../../registry/base/dialog-drawer/dialog-drawer"
+} from "../../../registry/dialog-drawer/dialog-drawer"
 
 // Live preview for the DialogDrawer docs page. It renders the real registry
-// component (Base UI side), so the preview swaps for real: the hook reads the
+// component, so the preview swaps for real: the hook reads the
 // window width, and the caption reflects the side currently rendered.
 export function DialogDrawerPreview() {
   const isMobile = useIsMobile()

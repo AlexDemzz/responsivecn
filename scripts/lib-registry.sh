@@ -4,7 +4,7 @@
 
 # Pin the shadcn CLI so CI and local runs resolve the same tool. Override with
 # SHADCN_VERSION if the repo bumps the dependency.
-SHADCN_VERSION="${SHADCN_VERSION:-4.13.0}"
+SHADCN_VERSION="${SHADCN_VERSION:-4.22.1}"
 SHADCN=(npx --yes "shadcn@${SHADCN_VERSION}")
 
 # Registry is served under /r/ (static assets). Fixed by the serving contract.
@@ -26,12 +26,4 @@ registry_item_names() {
     const r = require(process.argv[1]);
     (r.items || []).forEach((i) => console.log(i.name));
   ' "$1"
-}
-
-# Route an item to its base by slug suffix: `<slug>-radix` => radix, else base.
-item_base() {
-  case "$1" in
-    *-radix) echo radix ;;
-    *)       echo base ;;
-  esac
 }

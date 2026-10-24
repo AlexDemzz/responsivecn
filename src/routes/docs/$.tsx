@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from "@tanstack/react-router"
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router"
 import { createServerFn } from "@tanstack/react-start"
 import { DocsLayout } from "fumadocs-ui/layouts/docs"
 import {
@@ -12,12 +12,21 @@ import { Suspense } from "react"
 import browserCollections from "collections/browser"
 import { source } from "@/lib/source"
 import { baseOptions } from "@/lib/layout.shared"
+import { legacyDocsRedirect } from "@/lib/legacy-docs"
 import { useMDXComponents } from "@/components/mdx"
 
 export const Route = createFileRoute("/docs/$")({
   component: Page,
   loader: async ({ params }) => {
-    const slugs = params._splat?.split("/") ?? []
+    const slugs = params._splat?.split("/").filter(Boolean) ?? []
+    const target = legacyDocsRedirect(slugs)
+    if (target !== undefined) {
+      throw redirect({
+        to: "/docs/$",
+        params: { _splat: target },
+        statusCode: 301,
+      })
+    }
     const data = await serverLoader({ data: slugs })
     await clientLoader.preload(data.path)
     return data
