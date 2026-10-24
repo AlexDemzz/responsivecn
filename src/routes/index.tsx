@@ -118,7 +118,7 @@ function Home() {
                 <Link
                   to="/docs/$"
                   params={{ _splat: item.slug }}
-                  className="group/row flex flex-col outline-none"
+                  className="group/row flex flex-col"
                 >
                   <RowTitle>
                     {item.desktop}
@@ -166,7 +166,7 @@ function Home() {
         </Section>
       </div>
 
-      <footer className="mx-auto mt-auto flex w-full max-w-column flex-wrap gap-x-4 gap-y-1 pt-16 text-sm text-subtle-foreground">
+      <footer className="mx-auto mt-auto flex w-full max-w-column flex-wrap gap-x-4 gap-y-1 pt-16 text-sm text-muted-foreground">
         <span>{appName}</span>
         <Link to="/docs/$" params={{ _splat: "" }} className="link-text">
           Docs

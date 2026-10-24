@@ -1,7 +1,6 @@
-import { CheckIcon, CopyIcon } from "lucide-react"
-
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { CopyStateIcon, CopyStatus } from "@/components/copy-state-icon"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 
 export function InstallCommand({
@@ -27,24 +26,12 @@ export function InstallCommand({
       <Button
         variant="ghost"
         size="icon-sm"
-        aria-label={isCopied ? "Copied" : "Copy install command"}
+        aria-label="Copy install command"
         onClick={() => copy(command)}
       >
-        <span className="relative size-4">
-          <CopyIcon
-            className={cn(
-              "absolute inset-0 transition-[opacity,scale] duration-150 ease-out",
-              isCopied ? "scale-75 opacity-0" : "scale-100 opacity-100"
-            )}
-          />
-          <CheckIcon
-            className={cn(
-              "absolute inset-0 transition-[opacity,scale] duration-150 ease-out",
-              isCopied ? "scale-100 opacity-100" : "scale-75 opacity-0"
-            )}
-          />
-        </span>
+        <CopyStateIcon copied={isCopied} />
       </Button>
+      <CopyStatus copied={isCopied} />
     </div>
   )
 }

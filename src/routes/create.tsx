@@ -2,9 +2,7 @@ import * as React from "react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import {
   ArrowRightIcon,
-  CheckIcon,
   ChevronDownIcon,
-  CopyIcon,
   MonitorIcon,
   SmartphoneIcon,
 } from "lucide-react"
@@ -18,6 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Mark } from "@/components/mark"
+import { CopyStateIcon, CopyStatus } from "@/components/copy-state-icon"
 import { cn } from "@/lib/utils"
 import { appName } from "@/lib/shared"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
@@ -72,6 +71,7 @@ function CreatePage() {
 
   return (
     <main className="flex h-dvh flex-col overflow-clip bg-background bg-[radial-gradient(circle_at_1px_1px,var(--color-border)_1px,transparent_0)] [background-size:20px_20px]">
+      <h1 className="sr-only">Playground</h1>
       <header className="flex flex-wrap items-center gap-2 px-3 py-3 sm:px-4">
         <Link
           to="/"
@@ -226,9 +226,9 @@ function Frame({
       className="flex max-w-full min-w-0 flex-col overflow-clip rounded-2xl border bg-background"
       style={{ width: Math.round(width * scale) + 2 }}
     >
-      <div className="flex h-9 shrink-0 items-center justify-center gap-1.5 border-b px-3 text-xs text-muted-foreground">
-        <SideIcon aria-hidden className="size-3.5" />
-        <span className="truncate">
+      <div className="flex min-h-9 shrink-0 items-center justify-center gap-1.5 border-b px-3 py-2 text-xs text-muted-foreground">
+        <SideIcon aria-hidden className="size-3.5 shrink-0" />
+        <span className="text-balance">
           <span className="text-foreground tabular-nums">{width}px</span>{" "}
           renders the {isMobile ? pair.mobile : pair.desktop}
           {scale < 1 ? (
@@ -302,7 +302,7 @@ function WidthInput({
   }
 
   return (
-    <label className="flex h-8 items-center gap-1 rounded-lg border border-input bg-background ps-2.5 pe-2 font-mono text-sm text-muted-foreground focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 dark:bg-input/30">
+    <label className="flex h-8 items-center gap-1 rounded-lg border border-input bg-background ps-2.5 pe-2 font-mono text-base text-muted-foreground focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 sm:text-sm dark:bg-input/30">
       <input
         type="number"
         inputMode="numeric"
@@ -340,65 +340,63 @@ function CopySplitButton({ pair }: { pair: Pair }) {
 
   const primary = npxCommand(pair.slug)
   const entries = [
+    { key: "npx", label: "npx", value: primary },
     { key: "pnpm", label: "pnpm", value: pnpmCommand(pair.slug) },
     { key: "url", label: "Item URL", value: itemUrl(pair.slug) },
   ]
 
   return (
-    <ButtonGroup className="min-w-0 max-sm:w-full sm:ms-auto">
-      <Button
-        onClick={() => copy(primary, "npx")}
-        aria-label={`Copy ${primary}`}
-        className="min-w-0 flex-1 justify-start font-mono"
-      >
-        {copied === "npx" ? (
-          <CheckIcon data-icon="inline-start" />
-        ) : (
-          <CopyIcon data-icon="inline-start" />
-        )}
-        <span className="truncate">{primary}</span>
-      </Button>
-      <ButtonGroupSeparator />
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger
-          render={<Button size="icon" aria-label="More install options" />}
+    <>
+      <ButtonGroup className="min-w-0 max-sm:w-full sm:ms-auto">
+        <Button
+          onClick={() => copy(primary, "npx")}
+          aria-label={`Copy ${primary}`}
+          className="min-w-0 flex-1 justify-start font-mono"
         >
-          <ChevronDownIcon />
-        </PopoverTrigger>
-        <PopoverContent
-          align="end"
-          className="w-80 max-w-[calc(100vw-2rem)] gap-0 p-1"
-        >
-          {entries.map((entry) => (
-            <button
-              key={entry.key}
-              type="button"
-              onClick={() => {
-                copy(entry.value, entry.key)
-                window.clearTimeout(closeTimeout.current)
-                closeTimeout.current = window.setTimeout(
-                  () => setOpen(false),
-                  CLOSE_AFTER_COPY
-                )
-              }}
-              className="flex w-full flex-col items-start gap-0.5 rounded-md px-2.5 py-2 text-start outline-none focus-visible:bg-muted can-hover:hover:bg-muted"
-            >
-              <span className="flex w-full items-center justify-between text-sm font-medium">
-                {entry.label}
-                {copied === entry.key ? (
-                  <CheckIcon
-                    aria-label="Copied"
+          <CopyStateIcon data-icon="inline-start" copied={copied === "npx"} />
+          <span className="truncate">{primary}</span>
+        </Button>
+        <ButtonGroupSeparator />
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger
+            render={<Button size="icon" aria-label="More install options" />}
+          >
+            <ChevronDownIcon />
+          </PopoverTrigger>
+          <PopoverContent
+            align="end"
+            className="w-80 max-w-[calc(100vw-2rem)] gap-0 p-1"
+          >
+            {entries.map((entry) => (
+              <button
+                key={entry.key}
+                type="button"
+                onClick={() => {
+                  copy(entry.value, entry.key)
+                  window.clearTimeout(closeTimeout.current)
+                  closeTimeout.current = window.setTimeout(
+                    () => setOpen(false),
+                    CLOSE_AFTER_COPY
+                  )
+                }}
+                className="flex w-full flex-col items-start gap-0.5 rounded-md px-2.5 py-2 text-start outline-none focus-visible:bg-accent can-hover:hover:bg-accent"
+              >
+                <span className="flex w-full items-center justify-between text-sm font-medium">
+                  {entry.label}
+                  <CopyStateIcon
+                    copied={copied === entry.key}
                     className="size-3.5 text-muted-foreground"
                   />
-                ) : null}
-              </span>
-              <span className="w-full truncate font-mono text-xs text-muted-foreground">
-                {entry.value}
-              </span>
-            </button>
-          ))}
-        </PopoverContent>
-      </Popover>
-    </ButtonGroup>
+                </span>
+                <span className="w-full font-mono text-xs break-all text-muted-foreground">
+                  {entry.value}
+                </span>
+              </button>
+            ))}
+          </PopoverContent>
+        </Popover>
+      </ButtonGroup>
+      <CopyStatus copied={copied !== null} />
+    </>
   )
 }

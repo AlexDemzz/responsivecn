@@ -12,6 +12,7 @@ import { Suspense } from "react"
 import browserCollections from "collections/browser"
 import { source } from "@/lib/source"
 import { baseOptions } from "@/lib/layout.shared"
+import { appName } from "@/lib/shared"
 import { legacyDocsRedirect } from "@/lib/legacy-docs"
 import { useMDXComponents } from "@/components/mdx"
 
@@ -31,6 +32,16 @@ export const Route = createFileRoute("/docs/$")({
     await clientLoader.preload(data.path)
     return data
   },
+  head: ({ loaderData }) => ({
+    meta: loaderData
+      ? [
+          { title: `${loaderData.title} — ${appName}` },
+          ...(loaderData.description
+            ? [{ name: "description", content: loaderData.description }]
+            : []),
+        ]
+      : [],
+  }),
 })
 
 const serverLoader = createServerFn({ method: "GET" })
@@ -41,6 +52,8 @@ const serverLoader = createServerFn({ method: "GET" })
 
     return {
       path: page.path,
+      title: page.data.title,
+      description: page.data.description,
       pageTree: await source.serializePageTree(source.getPageTree()),
     }
   })

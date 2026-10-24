@@ -129,7 +129,10 @@ function StageFrame({
               {/* zoom, not scale: the iframe re-renders at the smaller size
                   (crisp text, no backdrop-blur seams) while its own window
                   keeps the logical width use-mobile reads. */}
+              {/* Out of the tab order: the open overlay inside traps focus,
+                  which would keep keyboard users from leaving the stage. */}
               <iframe
+                tabIndex={-1}
                 src={`/preview?pair=${pair.slug}&open=true`}
                 title={`${pair.desktop}${pair.mobile} at ${viewport.logicalWidth}px`}
                 onLoad={() => {

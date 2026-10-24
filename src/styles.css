@@ -169,6 +169,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  a:focus-visible {
+    @apply rounded-[5px] outline-2 outline-offset-2 outline-ring;
+  }
   ::selection {
     @apply bg-selection;
   }
