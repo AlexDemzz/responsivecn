@@ -156,7 +156,10 @@ function DialogDrawer({ drawer, children, ...props }: DialogDrawerProps) {
   )
 }
 
-type DialogDrawerTriggerProps = React.ComponentProps<typeof DialogTrigger> & {
+type DialogDrawerTriggerProps = Omit<
+  React.ComponentProps<typeof DialogTrigger>,
+  "handle"
+> & {
   drawer?: Omit<React.ComponentProps<typeof DrawerTrigger>, "children">
 }
 

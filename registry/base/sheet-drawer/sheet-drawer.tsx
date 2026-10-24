@@ -203,7 +203,10 @@ function SheetDrawer({ drawer, children, ...props }: SheetDrawerProps) {
   )
 }
 
-type SheetDrawerTriggerProps = React.ComponentProps<typeof SheetTrigger> & {
+type SheetDrawerTriggerProps = Omit<
+  React.ComponentProps<typeof SheetTrigger>,
+  "handle"
+> & {
   drawer?: Omit<React.ComponentProps<typeof DrawerTrigger>, "children">
 }
 

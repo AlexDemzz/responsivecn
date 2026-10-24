@@ -16,6 +16,7 @@ export function DocsBaseTabs({
       <TabsList variant="line">
         <TabsTrigger
           value="base"
+          nativeButton={false}
           render={
             <Link to="/docs/$" params={{ _splat: `base/${component}` }} />
           }
@@ -24,6 +25,7 @@ export function DocsBaseTabs({
         </TabsTrigger>
         <TabsTrigger
           value="radix"
+          nativeButton={false}
           render={
             <Link to="/docs/$" params={{ _splat: `radix/${component}` }} />
           }
