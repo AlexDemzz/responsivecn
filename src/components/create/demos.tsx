@@ -103,7 +103,7 @@ function SheetDrawerDemo() {
       <SheetDrawerTrigger render={<Button variant="outline" />}>
         Open sheet
       </SheetDrawerTrigger>
-      <SheetDrawerContent>
+      <SheetDrawerContent side="right">
         <SheetDrawerHeader>
           <SheetDrawerTitle>Edit profile</SheetDrawerTitle>
           <SheetDrawerDescription>

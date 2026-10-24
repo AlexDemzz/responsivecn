@@ -21,7 +21,7 @@
       "name": "sheet-drawer",
       "type": "registry:ui",
       "title": "Sheet Drawer",
-      "description": "A responsive Sheet: a side Sheet at desktop that becomes a swipeable Drawer below 768px. Drop-in replacement for the shadcn Sheet on Base UI or Radix: desktop props 1:1 on the root and every part, plus a drawer={{}} override typed on your Drawer.",
+      "description": "A responsive Sheet: a side Sheet at desktop that becomes a swipeable Drawer below 768px, opening from the same edge. Drop-in replacement for the shadcn Sheet on Base UI or Radix: desktop props 1:1 on the root and every part, open state kept across the breakpoint, plus a drawer={{}} override typed on your Drawer.",
       "dependencies": [],
       "registryDependencies": ["sheet", "drawer", "use-mobile"],
       "files": [

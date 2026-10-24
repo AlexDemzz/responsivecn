@@ -25,7 +25,9 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer"
 
-type Override<Props> = Props extends unknown ? Omit<Props, "children"> : never
+type Override<Props, Keys extends PropertyKey = never> = Props extends unknown
+  ? Omit<Props, "children" | Keys>
+  : never
 
 const ROOT_CALLBACKS = ["onOpenChange", "onOpenChangeComplete"]
 
@@ -71,12 +73,14 @@ function omitKeys(props: object, keys: readonly string[]) {
 
 function toMobileRootProps<Props extends object>(
   shared: object,
-  override: Props | undefined
+  override: object | undefined,
+  desktopOnly: readonly string[] = []
 ) {
+  const forwarded = omitKeys(shared, desktopOnly)
   return {
-    ...shared,
+    ...forwarded,
     ...override,
-    ...composeRootCallbacks(shared, override),
+    ...composeRootCallbacks(forwarded, override),
   } as Props
 }
 
@@ -98,18 +102,31 @@ function toMobileProps<Props extends object>(
   } as Props
 }
 
-const CONTENT_DESKTOP_ONLY = ["side", "showCloseButton"]
-
-type SheetSide = NonNullable<React.ComponentProps<typeof SheetContent>["side"]>
-
-const SIDE_TO_DRAWER_EDGE: Record<SheetSide, object> = {
-  top: { swipeDirection: "up", direction: "top" },
-  right: { swipeDirection: "right", direction: "right" },
-  bottom: { swipeDirection: "down", direction: "bottom" },
-  left: { swipeDirection: "left", direction: "left" },
+function callOpenChange(handler: unknown, args: unknown[]) {
+  if (typeof handler === "function") handler(...args)
+  const details = args[1] as { isCanceled?: boolean } | undefined
+  return details?.isCanceled !== true
 }
 
-const SheetDrawerContext = React.createContext<{ isMobile: boolean } | null>(
+const SIDE_TO_DRAWER_EDGE = new Map<unknown, object>([
+  ["top", { swipeDirection: "up", direction: "top" }],
+  ["right", { swipeDirection: "right", direction: "right" }],
+  ["bottom", { swipeDirection: "down", direction: "bottom" }],
+  ["left", { swipeDirection: "left", direction: "left" }],
+])
+
+const ROOT_DESKTOP_ONLY = ["handle", "triggerId", "defaultTriggerId"]
+
+const TRIGGER_DESKTOP_ONLY = ["handle", "payload"]
+
+const CONTENT_DESKTOP_ONLY = ["side", "showCloseButton"]
+
+type SheetDrawerContextValue = {
+  isMobile: boolean
+  setSide: (side: unknown) => void
+}
+
+const SheetDrawerContext = React.createContext<SheetDrawerContextValue | null>(
   null
 )
 
@@ -123,59 +140,71 @@ function useSheetDrawer() {
   return context
 }
 
-type SheetDrawerProps = Omit<
-  React.ComponentProps<typeof Sheet>,
-  "handle" | "triggerId" | "defaultTriggerId"
-> & {
-  drawer?: Override<React.ComponentProps<typeof Drawer>>
+type SheetDrawerProps = React.ComponentProps<typeof Sheet> & {
+  drawer?: Override<React.ComponentProps<typeof Drawer>, "open" | "defaultOpen">
 }
 
-function findExplicitSide(children: SheetDrawerProps["children"]) {
-  let side: SheetSide | undefined
-  if (typeof children === "function") return side
-  React.Children.forEach(children, (child) => {
-    if (
-      React.isValidElement<SheetDrawerContentProps>(child) &&
-      child.type === SheetDrawerContent &&
-      child.props.side != null
-    ) {
-      side = child.props.side
-    }
-  })
-  return side
-}
-
-function SheetDrawer({ drawer, children, ...props }: SheetDrawerProps) {
+function SheetDrawer({
+  drawer,
+  open: openProp,
+  defaultOpen = false,
+  onOpenChange,
+  children,
+  ...props
+}: SheetDrawerProps) {
   const isMobile = useIsMobile()
-  const contextValue = React.useMemo(() => ({ isMobile }), [isMobile])
-  const side = findExplicitSide(children)
-  const drawerEdge = side ? SIDE_TO_DRAWER_EDGE[side] : {}
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
+  const [side, setSide] = React.useState<unknown>()
+  const open = openProp ?? uncontrolledOpen
+  const contextValue = React.useMemo(() => ({ isMobile, setSide }), [isMobile])
+
+  const handleOpenChange = React.useCallback(
+    (nextOpen: boolean, ...details: unknown[]) => {
+      if (callOpenChange(onOpenChange, [nextOpen, ...details])) {
+        setUncontrolledOpen(nextOpen)
+      }
+    },
+    [onOpenChange]
+  )
 
   return (
     <SheetDrawerContext.Provider value={contextValue}>
       {isMobile ? (
-        <Drawer {...toMobileRootProps({ ...drawerEdge, ...props }, drawer)}>
+        <Drawer
+          {...toMobileRootProps<React.ComponentProps<typeof Drawer>>(
+            {
+              autoFocus: true,
+              ...SIDE_TO_DRAWER_EDGE.get(side),
+              ...props,
+              open,
+              onOpenChange: handleOpenChange,
+            },
+            drawer,
+            ROOT_DESKTOP_ONLY
+          )}
+        >
           {children}
         </Drawer>
       ) : (
-        <Sheet {...props}>{children}</Sheet>
+        <Sheet {...props} open={open} onOpenChange={handleOpenChange}>
+          {children}
+        </Sheet>
       )}
     </SheetDrawerContext.Provider>
   )
 }
 
-type SheetDrawerTriggerProps = Omit<
-  React.ComponentProps<typeof SheetTrigger>,
-  "handle"
-> & {
+type SheetDrawerTriggerProps = React.ComponentProps<typeof SheetTrigger> & {
   drawer?: Override<React.ComponentProps<typeof DrawerTrigger>>
 }
 
 function SheetDrawerTrigger({ drawer, ...props }: SheetDrawerTriggerProps) {
-  const { isMobile } = useSheetDrawer()
+  const context = React.useContext(SheetDrawerContext)
 
-  if (isMobile) {
-    return <DrawerTrigger {...toMobileProps(props, drawer)} />
+  if (context?.isMobile) {
+    return (
+      <DrawerTrigger {...toMobileProps(props, drawer, TRIGGER_DESKTOP_ONLY)} />
+    )
   }
   return <SheetTrigger {...props} />
 }
@@ -189,7 +218,13 @@ function SheetDrawerContent({
   children,
   ...props
 }: SheetDrawerContentProps) {
-  const { isMobile } = useSheetDrawer()
+  const { isMobile, setSide } = useSheetDrawer()
+  const { side } = props
+
+  React.useEffect(() => {
+    setSide(side)
+    return () => setSide(undefined)
+  }, [side, setSide])
 
   if (isMobile) {
     return (
@@ -280,14 +315,4 @@ export {
   SheetDrawerHeader,
   SheetDrawerTitle,
   SheetDrawerTrigger,
-}
-export type {
-  SheetDrawerCloseProps,
-  SheetDrawerContentProps,
-  SheetDrawerDescriptionProps,
-  SheetDrawerFooterProps,
-  SheetDrawerHeaderProps,
-  SheetDrawerProps,
-  SheetDrawerTitleProps,
-  SheetDrawerTriggerProps,
 }

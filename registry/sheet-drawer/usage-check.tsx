@@ -7,6 +7,7 @@
 
 import * as React from "react"
 
+import { Button } from "@/components/ui/button"
 import {
   Sheet,
   SheetClose,
@@ -45,16 +46,13 @@ export type DropIn = [
   Expect<
     SameProps<
       DesktopProps<typeof SheetDrawer>,
-      Omit<
-        React.ComponentProps<typeof Sheet>,
-        "handle" | "triggerId" | "defaultTriggerId"
-      >
+      React.ComponentProps<typeof Sheet>
     >
   >,
   Expect<
     SameProps<
       DesktopProps<typeof SheetDrawerTrigger>,
-      Omit<React.ComponentProps<typeof SheetTrigger>, "handle">
+      React.ComponentProps<typeof SheetTrigger>
     >
   >,
   Expect<
@@ -115,6 +113,35 @@ export function BasicUsage() {
   )
 }
 
+// shadcn's Sheet docs make the Trigger and Close a Button: with
+// render={<Button />} on Base UI, with asChild on Radix. The spread carries
+// both spellings; each base type-checks the one it declares.
+const asButton = { asChild: true, render: <Button variant="outline" /> }
+
+export function ShadcnSheetDocsExample() {
+  return (
+    <SheetDrawer>
+      <SheetDrawerTrigger {...asButton}>Open</SheetDrawerTrigger>
+      <SheetDrawerContent className="w-[400px] sm:w-[540px]">
+        <SheetDrawerHeader>
+          <SheetDrawerTitle>Edit profile</SheetDrawerTitle>
+          <SheetDrawerDescription>
+            Make changes to your profile here. Click save when you&apos;re done.
+          </SheetDrawerDescription>
+        </SheetDrawerHeader>
+        <div className="grid flex-1 auto-rows-min gap-6 px-4">
+          <label htmlFor="sheet-name">Name</label>
+          <input id="sheet-name" defaultValue="Pedro Duarte" />
+        </div>
+        <SheetDrawerFooter>
+          <Button type="submit">Save changes</Button>
+          <SheetDrawerClose {...asButton}>Close</SheetDrawerClose>
+        </SheetDrawerFooter>
+      </SheetDrawerContent>
+    </SheetDrawer>
+  )
+}
+
 export function ControlledWithSetState() {
   const [open, setOpen] = React.useState(false)
 
@@ -157,6 +184,16 @@ export function InvalidUsages() {
     <>
       {/* @ts-expect-error snapPoints is mobile-only: it lives in drawer={{}} */}
       <SheetDrawer snapPoints={[0.5, 1]}>
+        <SheetDrawerContent>…</SheetDrawerContent>
+      </SheetDrawer>
+
+      {/* @ts-expect-error open belongs to the root, not to one side */}
+      <SheetDrawer drawer={{ open: true }}>
+        <SheetDrawerContent>…</SheetDrawerContent>
+      </SheetDrawer>
+
+      {/* @ts-expect-error defaultOpen belongs to the root, not to one side */}
+      <SheetDrawer drawer={{ defaultOpen: true }}>
         <SheetDrawerContent>…</SheetDrawerContent>
       </SheetDrawer>
 

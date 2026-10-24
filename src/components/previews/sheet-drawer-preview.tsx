@@ -11,10 +11,6 @@ import {
   SheetDrawerTrigger,
 } from "../../../registry/sheet-drawer/sheet-drawer"
 
-// Live preview for the SheetDrawer docs page. It renders the real registry
-// component with an explicit side="right", so the preview also
-// demonstrates the side→swipeDirection mapping: a right Sheet at desktop, a
-// right-anchored Drawer below 768px.
 export function SheetDrawerPreview() {
   const isMobile = useIsMobile()
 
@@ -28,8 +24,7 @@ export function SheetDrawerPreview() {
           <SheetDrawerHeader>
             <SheetDrawerTitle>Workspace</SheetDrawerTitle>
             <SheetDrawerDescription>
-              The explicit side=&quot;right&quot; also anchors the mobile Drawer
-              to the right.
+              Switch between your projects and settings.
             </SheetDrawerDescription>
           </SheetDrawerHeader>
           <nav className="grid gap-1 px-4 text-sm">
@@ -54,9 +49,9 @@ export function SheetDrawerPreview() {
       </SheetDrawer>
       <p className="text-xs text-muted-foreground">
         {isMobile
-          ? "Below 768px — opens as a right-anchored Drawer (side mapped to swipeDirection)."
-          : "At 768px and up — opens as a Sheet from the right."}{" "}
-        Resize the window across 768px and reopen to see the swap.
+          ? "Below 768px: a Drawer from the right edge."
+          : "At 768px and up: a Sheet from the right edge."}{" "}
+        Resize the window across 768px to see the swap.
       </p>
     </div>
   )
