@@ -22,7 +22,7 @@ describe("llmsTxt", () => {
     const [h1, blank, summary] = text.split("\n")
     expect(h1).toBe("# responsivecn")
     expect(blank).toBe("")
-    expect(summary?.startsWith("> ")).toBe(true)
+    expect(summary.startsWith("> ")).toBe(true)
   })
 
   it("links each docs page to its Markdown twin", () => {

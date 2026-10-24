@@ -15,6 +15,19 @@ export default [
     },
   },
   {
-    ignores: ["eslint.config.js", ".prettierrc"],
+    files: ["registry/**"],
+    rules: {
+      "@typescript-eslint/naming-convention": "off",
+    },
+  },
+  {
+    ignores: [
+      "eslint.config.js",
+      ".prettierrc",
+      ".source/**",
+      "prototypes/**",
+      "src/components/ui/**",
+      "src/lib/utils.ts",
+    ],
   },
 ]

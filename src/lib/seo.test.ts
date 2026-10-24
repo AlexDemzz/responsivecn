@@ -82,9 +82,9 @@ describe("pageHead", () => {
       jsonLd: { "@type": "WebSite", name: "</script><script>alert(1)" },
     })
     const script = withJsonLd.scripts[0]
-    expect(script?.type).toBe("application/ld+json")
-    expect(script?.children).not.toContain("</script>")
-    expect(JSON.parse(script?.children ?? "")).toEqual({
+    expect(script.type).toBe("application/ld+json")
+    expect(script.children).not.toContain("</script>")
+    expect(JSON.parse(script.children)).toEqual({
       "@context": "https://schema.org",
       "@type": "WebSite",
       name: "</script><script>alert(1)",
