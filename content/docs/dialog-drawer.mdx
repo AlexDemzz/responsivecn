@@ -6,9 +6,10 @@ description: A centered Dialog at desktop that becomes a swipeable Drawer below 
 A drop-in replacement for the shadcn
 [Dialog](https://ui.shadcn.com/docs/components/dialog): at 768px and up it
 renders your Dialog unchanged; below, the same children render inside your
-[Drawer](https://ui.shadcn.com/docs/components/drawer). The shared mechanism
-(breakpoint, override prop, merge rules) is documented once in the
-[Introduction](/docs).
+[Drawer](https://ui.shadcn.com/docs/components/drawer). The
+[breakpoint](/docs/breakpoint) and the [override prop](/docs/override-prop)
+work the same for every pair, so this page covers only what is specific to
+this one.
 
 <ComponentDemo>
   <ComponentDemoRender>
@@ -61,15 +62,8 @@ export function EditProfile() {
 
 <Step>
 
-Configure the `@responsivecn` namespace first: see
-[Installation](/docs#installation) in the Introduction.
-
-</Step>
-
-<Step>
-
 ```bash
-npx shadcn@latest add @responsivecn/dialog-drawer
+npx shadcn@latest add @alexandrejoly/dialog-drawer
 ```
 
 </Step>
@@ -86,7 +80,7 @@ Update the import paths to match your project setup.
 
 Change the imports and insert `Drawer` after `Dialog` in each part name:
 `DialogContent` becomes `DialogDrawerContent`, and so on, with the same props
-and children ([Migrating](/docs#migrating) in the Introduction). Then check
+and children (see [Migrating](/docs/installation#migrating)). Then check
 three things below 768px: width classes on the Content (see
 [Sizing classes](#sizing-classes)), padding around the body (see
 [Body padding](#body-padding)), and the
@@ -140,6 +134,12 @@ DialogDrawer
 Everything inside `drawer={{...}}` is your installed Drawer's own API, for
 example snap points on Base UI (for Vaul, see [Radix notes](#radix-notes)):
 
+<ComponentDemo>
+  <ComponentDemoRender>
+    <DialogDrawerSnapPointsExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
+
 ```tsx
 <DialogDrawer
   drawer={{
@@ -152,6 +152,9 @@ example snap points on Base UI (for Vaul, see [Radix notes](#radix-notes)):
 </DialogDrawer>
 ```
 
+  </ComponentDemoCode>
+</ComponentDemo>
+
 ## Sizing classes
 
 The `className` on `DialogDrawerContent` applies to both sides. A width such
@@ -160,6 +163,12 @@ as `sm:max-w-sm`, from the shadcn Dialog examples, starts at 640px, below the
 tablets. Reset it in the override with the same `sm:` prefix, since `cn` only
 replaces a class that has the same prefix, or write the width with `md:`:
 
+<ComponentDemo>
+  <ComponentDemoRender>
+    <DialogDrawerSizingExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
+
 ```tsx
 <DialogDrawerContent
   className="sm:max-w-sm"
@@ -167,10 +176,19 @@ replaces a class that has the same prefix, or write the width with `md:`:
 >
 ```
 
+  </ComponentDemoCode>
+</ComponentDemo>
+
 ## Body padding
 
 The Dialog pads its whole content box; the Drawer pads only its header and
 footer. Give the body between them its own padding below 768px:
+
+<ComponentDemo>
+  <ComponentDemoRender>
+    <DialogDrawerBodyPaddingExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
 
 ```tsx
 <DialogDrawerContent>
@@ -179,6 +197,9 @@ footer. Give the body between them its own padding below 768px:
   <DialogDrawerFooter>{/* … */}</DialogDrawerFooter>
 </DialogDrawerContent>
 ```
+
+  </ComponentDemoCode>
+</ComponentDemo>
 
 ## Opening on load
 
@@ -195,6 +216,12 @@ receive reasons only the Drawer has, such as `"swipe"`, which the Dialog's
 types do not list. To act on them, use the Drawer's own handler, which runs
 after the shared one:
 
+<ComponentDemo>
+  <ComponentDemoRender>
+    <DialogDrawerSwipeReasonExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
+
 ```tsx
 <DialogDrawer
   onOpenChange={setOpen}
@@ -209,6 +236,9 @@ after the shared one:
   {/* … */}
 </DialogDrawer>
 ```
+
+  </ComponentDemoCode>
+</ComponentDemo>
 
 ## Desktop-only props
 

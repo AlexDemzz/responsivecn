@@ -1,9 +1,20 @@
 import * as React from "react"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { MonitorIcon, SmartphoneIcon } from "lucide-react"
+import { FileCodeIcon, MonitorIcon, SmartphoneIcon } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import {
+  CodeBlock,
+  CodeBlockActions,
+  CodeBlockContent,
+  CodeBlockCopyButton,
+  CodeBlockHeader,
+  CodeBlockLine,
+  CodeBlockTitle,
+} from "@/components/ui/code-block"
+import { useHighlightedCode } from "@/hooks/use-highlighted-code"
+import { BaseUIIcon, RadixIcon, ReactAriaIcon } from "@/components/base-icons"
 import { GitHubIcon } from "@/components/github-icon"
 import { Mark } from "@/components/mark"
 import { InstallCommand } from "@/components/landing/install-command"
@@ -26,17 +37,26 @@ export const Route = createFileRoute("/")({
   head: () => pageHead({ ...homeSeo, jsonLd: homeJsonLd() }),
 })
 
+const BASE_UI_URL = "https://base-ui.com/react/overview/quick-start"
+const RADIX_URL = "https://www.radix-ui.com/primitives"
+
 const BASES = [
   {
     name: "Base UI",
+    href: BASE_UI_URL,
+    icon: BaseUIIcon,
     description: "shadcn’s default base. The mobile side is Base UI’s Drawer.",
   },
   {
     name: "Radix",
+    href: RADIX_URL,
+    icon: RadixIcon,
     description: "The mobile side is the Vaul Drawer that shadcn ships.",
   },
   {
     name: "React Aria",
+    href: "https://react-spectrum.adobe.com/react-aria/",
+    icon: ReactAriaIcon,
     description:
       "Not supported: its shadcn components have a different set of parts.",
   },
@@ -71,7 +91,7 @@ function Home() {
         <div className="flex items-center justify-between">
           <Mark
             drawer={width < BREAKPOINT}
-            className="size-10 [stroke-width:1.2] text-foreground"
+            className="size-10 text-foreground"
           />
           <a
             href={githubUrl}
@@ -150,12 +170,17 @@ function Home() {
             <code className="font-mono text-sm text-foreground">drawer</code> or{" "}
             <code className="font-mono text-sm text-foreground">popover</code>.
           </p>
-          <pre className="mt-4 overflow-x-auto rounded-2xl bg-muted p-4 font-mono text-sm leading-relaxed">
-            <code>{MIGRATION}</code>
-          </pre>
+          <MigrationCode />
         </Section>
 
-        <Section title="Works on Base UI and Radix">
+        <Section
+          title={
+            <>
+              Works on <BaseLink href={BASE_UI_URL} icon={BaseUIIcon} name="Base UI" />{" "}
+              and <BaseLink href={RADIX_URL} icon={RadixIcon} name="Radix" />
+            </>
+          }
+        >
           <p className="mb-4 text-pretty text-muted-foreground">
             One file per pair, built on the shadcn components you already
             installed, so it takes their props and runs on their base.
@@ -163,12 +188,20 @@ function Home() {
           <ul>
             {BASES.map((base) => (
               <Row key={base.name}>
-                <div className="flex flex-col">
-                  <span className="font-book">{base.name}</span>
+                <a
+                  href={base.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group/row flex flex-col"
+                >
+                  <RowTitle>
+                    <base.icon className="me-2 inline-block size-4 align-[-0.125em]" />
+                    {base.name}
+                  </RowTitle>
                   <span className="text-pretty text-muted-foreground">
                     {base.description}
                   </span>
-                </div>
+                </a>
               </Row>
             ))}
           </ul>
@@ -190,6 +223,50 @@ function Home() {
         </a>
       </footer>
     </main>
+  )
+}
+
+function MigrationCode() {
+  const lines = useHighlightedCode(MIGRATION, "tsx")
+  return (
+    <CodeBlock className="mt-4">
+      <CodeBlockHeader>
+        <CodeBlockTitle>
+          <FileCodeIcon />
+          edit-profile.tsx
+        </CodeBlockTitle>
+        <CodeBlockActions>
+          <CodeBlockCopyButton value={MIGRATION} />
+        </CodeBlockActions>
+      </CodeBlockHeader>
+      <CodeBlockContent>
+        {lines.map((line, index) => (
+          <CodeBlockLine key={index}>{line}</CodeBlockLine>
+        ))}
+      </CodeBlockContent>
+    </CodeBlock>
+  )
+}
+
+function BaseLink({
+  href,
+  icon: Icon,
+  name,
+}: {
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+  name: string
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="link-text text-foreground"
+    >
+      <Icon className="me-1 inline-block size-[1em] align-[-0.125em]" />
+      {name}
+    </a>
   )
 }
 
@@ -226,7 +303,7 @@ function Section({
   title,
   children,
 }: {
-  title: string
+  title: React.ReactNode
   children: React.ReactNode
 }) {
   const id = React.useId()

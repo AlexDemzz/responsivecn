@@ -2,19 +2,20 @@
 // public/. Runs on prebuild under plain Node (type stripping), so it imports
 // app modules by relative path with their `.ts` extension.
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises"
-import { dirname, join } from "node:path"
+import { dirname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Resvg } from "@resvg/resvg-js"
 import satori from "satori"
 import type { CSSProperties, ReactElement, ReactNode } from "react"
 import { parseFrontmatter } from "../src/lib/frontmatter.ts"
+import { markSvg } from "../src/lib/mark.ts"
 import {
   OG_IMAGE_HEIGHT,
   OG_IMAGE_WIDTH,
   homeSeo,
   ogImagePath,
 } from "../src/lib/seo.ts"
-import { siteUrl } from "../src/lib/shared.ts"
+import { appName } from "../src/lib/shared.ts"
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url))
 const PUBLIC_DIR = join(ROOT, "public")
@@ -24,16 +25,9 @@ const BACKGROUND = "#fcfbf9"
 const FOREGROUND = "#201e1c"
 const MUTED = "#6f6c67"
 
-const DIALOG_PATH =
-  "M7 8h10a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2Z"
+const DARK_FOREGROUND = "#f2f0ed"
 
-function markSvg({ padded }: { padded: boolean }): string {
-  const viewBox = padded ? "0 0 24 24" : "4 4 16 16"
-  const background = padded
-    ? `<rect width="24" height="24" fill="${BACKGROUND}"/>`
-    : ""
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" fill="none" stroke="${FOREGROUND}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${background}<path d="${DIALOG_PATH}"/></svg>`
-}
+const FAVICON_STYLE = `<style>.mark{fill:${FOREGROUND}}@media (prefers-color-scheme:dark){.mark{fill:${DARK_FOREGROUND}}}</style>`
 
 function renderPng(svg: string, width: number): Buffer {
   return new Resvg(svg, { fitTo: { mode: "width", value: width } })
@@ -57,22 +51,36 @@ function icoFromPng(png: Buffer, size: number): Buffer {
 }
 
 async function writeIcons(): Promise<void> {
-  const favicon = renderPng(markSvg({ padded: false }), 32)
+  await writeFile(
+    join(PUBLIC_DIR, "favicon.svg"),
+    `${markSvg({ color: FOREGROUND, style: FAVICON_STYLE })}\n`
+  )
+  const favicon = renderPng(markSvg({ color: FOREGROUND }), 32)
   await writeFile(join(PUBLIC_DIR, "favicon.ico"), icoFromPng(favicon, 32))
-  const padded = markSvg({ padded: true })
-  const sizes = {
-    "apple-touch-icon.png": 180,
+  // iOS rounds the touch icon itself, so the modal fills it edge to edge.
+  await writeFile(
+    join(PUBLIC_DIR, "apple-touch-icon.png"),
+    renderPng(
+      markSvg({ color: FOREGROUND, background: BACKGROUND, fullBleed: true }),
+      180
+    )
+  )
+  // Also the maskable icon: padded into the safe zone.
+  const padded = markSvg({
+    color: FOREGROUND,
+    background: BACKGROUND,
+    padded: true,
+  })
+  for (const [file, size] of Object.entries({
     "icon-192.png": 192,
     "icon-512.png": 512,
-  }
-  for (const [file, size] of Object.entries(sizes)) {
+  })) {
     await writeFile(join(PUBLIC_DIR, file), renderPng(padded, size))
   }
 }
 
 type OgPage = {
   path: string
-  eyebrow: string
   title: string
   description: string
 }
@@ -86,80 +94,85 @@ function h(
   return { type, key: null, props: { style, children, ...props } }
 }
 
-function ogCard(page: OgPage): ReactElement {
-  const mark = `data:image/svg+xml;base64,${Buffer.from(markSvg({ padded: false })).toString("base64")}`
-  const frame = {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    backgroundColor: BACKGROUND,
-    color: FOREGROUND,
-    fontFamily: "Inter",
-  } satisfies CSSProperties
-  return h("div", frame, [
-    h(
-      "div",
-      {
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        flexGrow: 1,
-        margin: 72,
-      },
-      [
-        h("div", { display: "flex", alignItems: "center", gap: 20 }, [
-          h("img", { width: 56, height: 56 }, undefined, {
-            src: mark,
-            width: 56,
-            height: 56,
-          }),
-          h("div", { fontSize: 36, fontWeight: 500 }, "responsivecn"),
-        ]),
-        h("div", { display: "flex", flexDirection: "column", gap: 20 }, [
-          h("div", { fontSize: 28, color: MUTED }, page.eyebrow),
-          h(
-            "div",
-            {
-              fontSize: 72,
-              fontWeight: 600,
-              letterSpacing: -2,
-              lineHeight: 1.1,
-            },
-            page.title
-          ),
-          h(
-            "div",
-            { fontSize: 30, color: MUTED, lineHeight: 1.4, maxWidth: 980 },
-            page.description
-          ),
-        ]),
-        h("div", { fontSize: 26, color: MUTED }, new URL(siteUrl).host),
-      ]
-    ),
-  ])
+function markImage(size: number): ReactElement {
+  const src = `data:image/svg+xml;base64,${Buffer.from(markSvg({ color: FOREGROUND })).toString("base64")}`
+  return h("img", { width: size, height: size }, undefined, {
+    src,
+    width: size,
+    height: size,
+  })
 }
 
-function eyebrowForSlug(slug: string): string {
-  if (slug === "index") return "Docs"
-  const [desktop = "", mobile = ""] = slug
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-  return `${desktop} to ${mobile}`
+// The alexandrejoly.me card: media, then title and description, signed at
+// the bottom. Light colour scheme, 80px of padding.
+function ogCard(page: OgPage): ReactElement {
+  return h(
+    "div",
+    {
+      width: OG_IMAGE_WIDTH,
+      height: OG_IMAGE_HEIGHT,
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
+      // Satori sizes boxes content-box, so the padding would push the
+      // signature off the canvas.
+      boxSizing: "border-box",
+      padding: 80,
+      backgroundColor: BACKGROUND,
+      color: FOREGROUND,
+      fontFamily: "Inter",
+    },
+    [
+      h("div", { display: "flex", flexDirection: "column", gap: 32 }, [
+        markImage(128),
+        h(
+          "div",
+          { display: "flex", flexDirection: "column", gap: 16, maxWidth: 960 },
+          [
+            h(
+              "div",
+              {
+                fontSize: 60,
+                fontWeight: 600,
+                letterSpacing: -1.5,
+                lineHeight: 1.1,
+              },
+              page.title
+            ),
+            h(
+              "div",
+              { fontSize: 30, color: MUTED, lineHeight: 1.375 },
+              page.description
+            ),
+          ]
+        ),
+      ]),
+      h("div", { display: "flex", alignItems: "center", gap: 20 }, [
+        markImage(36),
+        h("div", { fontSize: 30, fontWeight: 600, lineHeight: 1 }, appName),
+      ]),
+    ]
+  )
+}
+
+async function mdxFiles(dir: string): Promise<string[]> {
+  const entries = await readdir(dir, { withFileTypes: true, recursive: true })
+  return entries
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".mdx"))
+    .map((entry) => join(entry.parentPath, entry.name))
 }
 
 async function ogPages(): Promise<OgPage[]> {
-  const files = (await readdir(DOCS_DIR)).filter((file) =>
-    file.endsWith(".mdx")
-  )
   const docs = await Promise.all(
-    files.map(async (file) => {
-      const slug = file.replace(/\.mdx$/, "")
+    (await mdxFiles(DOCS_DIR)).map(async (file) => {
+      const slug = relative(DOCS_DIR, file)
+        .replace(/\.mdx$/, "")
+        .replace(/(^|\/)index$/, "")
       const { title, description } = parseFrontmatter(
-        await readFile(join(DOCS_DIR, file), "utf8")
+        await readFile(file, "utf8")
       )
       return {
-        path: slug === "index" ? "/docs" : `/docs/${slug}`,
-        eyebrow: eyebrowForSlug(slug),
+        path: slug ? `/docs/${slug}` : "/docs",
         title,
         description,
       }
@@ -168,7 +181,6 @@ async function ogPages(): Promise<OgPage[]> {
   return [
     {
       path: homeSeo.path,
-      eyebrow: "shadcn/ui registry",
       title: "Responsive shadcn/ui overlays",
       description: homeSeo.description,
     },

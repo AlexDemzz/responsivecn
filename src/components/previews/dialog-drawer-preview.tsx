@@ -8,7 +8,7 @@ import {
   DialogDrawerHeader,
   DialogDrawerTitle,
   DialogDrawerTrigger,
-} from "../../../registry/dialog-drawer/dialog-drawer"
+} from "@/components/ui/dialog-drawer"
 
 export function DialogDrawerPreview() {
   const isMobile = useIsMobile()

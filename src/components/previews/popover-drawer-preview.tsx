@@ -7,7 +7,7 @@ import {
   PopoverDrawerHeader,
   PopoverDrawerTitle,
   PopoverDrawerTrigger,
-} from "../../../registry/popover-drawer/popover-drawer"
+} from "@/components/ui/popover-drawer"
 
 const DIMENSIONS = [
   { id: "popover-drawer-preview-width", label: "Width", value: "100%" },

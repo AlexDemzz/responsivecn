@@ -14,12 +14,12 @@ function metaContent(
 describe("canonicalUrl", () => {
   it("puts the path on the production origin without a trailing slash", () => {
     expect(canonicalUrl("/docs/dialog-drawer/")).toBe(
-      "https://responsive-cn.dev/docs/dialog-drawer"
+      "https://responsivecn.alexandrejoly.me/docs/dialog-drawer"
     )
   })
 
   it("keeps the root as the bare origin with its slash", () => {
-    expect(canonicalUrl("/")).toBe("https://responsive-cn.dev/")
+    expect(canonicalUrl("/")).toBe("https://responsivecn.alexandrejoly.me/")
   })
 })
 
@@ -33,9 +33,9 @@ describe("ogImagePath", () => {
 
 describe("markdownUrl", () => {
   it("points at the page's .md twin", () => {
-    expect(markdownUrl("/")).toBe("https://responsive-cn.dev/index.md")
+    expect(markdownUrl("/")).toBe("https://responsivecn.alexandrejoly.me/index.md")
     expect(markdownUrl("/docs/tooltip-popover")).toBe(
-      "https://responsive-cn.dev/docs/tooltip-popover.md"
+      "https://responsivecn.alexandrejoly.me/docs/tooltip-popover.md"
     )
   })
 })
@@ -50,13 +50,13 @@ describe("pageHead", () => {
 
   it("declares a self-referencing canonical that Open Graph repeats", () => {
     const canonical = head.links.find((link) => link.rel === "canonical")
-    expect(canonical?.href).toBe("https://responsive-cn.dev/docs/dialog-drawer")
+    expect(canonical?.href).toBe("https://responsivecn.alexandrejoly.me/docs/dialog-drawer")
     expect(metaContent(head, "og:url")).toBe(canonical?.href)
   })
 
   it("shares the page with a large card and an absolute image URL", () => {
     expect(metaContent(head, "og:image")).toBe(
-      "https://responsive-cn.dev/og/docs/dialog-drawer.png"
+      "https://responsivecn.alexandrejoly.me/og/docs/dialog-drawer.png"
     )
     expect(metaContent(head, "twitter:card")).toBe("summary_large_image")
     expect(metaContent(head, "twitter:image")).toBe(
@@ -70,7 +70,7 @@ describe("pageHead", () => {
       (link) => link.rel === "alternate" && link.type === "text/markdown"
     )
     expect(alternate?.href).toBe(
-      "https://responsive-cn.dev/docs/dialog-drawer.md"
+      "https://responsivecn.alexandrejoly.me/docs/dialog-drawer.md"
     )
   })
 

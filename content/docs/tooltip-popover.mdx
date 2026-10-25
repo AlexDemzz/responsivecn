@@ -8,8 +8,9 @@ A drop-in replacement for the shadcn
 renders your Tooltip unchanged; below, the same children render inside your
 [Popover](https://ui.shadcn.com/docs/components/popover). Hover does not exist
 on touch, so a tooltip never opens under a finger; a Popover opens on tap. The
-shared mechanism (breakpoint, override prop, merge rules) is documented once
-in the [Introduction](/docs).
+[breakpoint](/docs/breakpoint) and the [override prop](/docs/override-prop)
+work the same for every pair, so this page covers only what is specific to
+this one.
 
 Use it for infotips, where the trigger only reveals the tip. Keep the shadcn
 Tooltip, with an `aria-label`, on action buttons: see
@@ -57,15 +58,8 @@ export function ResponseRateInfo() {
 
 <Step>
 
-Configure the `@responsivecn` namespace first: see
-[Installation](/docs#installation) in the Introduction.
-
-</Step>
-
-<Step>
-
 ```bash
-npx shadcn@latest add @responsivecn/tooltip-popover
+npx shadcn@latest add @alexandrejoly/tooltip-popover
 ```
 
 </Step>
@@ -83,7 +77,7 @@ Update the import paths to match your project setup.
 Change the imports and rename the tags: `Tooltip` becomes `TooltipPopover`,
 `TooltipTrigger` becomes `TooltipPopoverTrigger`, `TooltipContent` becomes
 `TooltipPopoverContent`, with the same props and children
-([Migrating](/docs#migrating) in the Introduction). Leave `TooltipProvider` as
+(see [Migrating](/docs/installation#migrating)). Leave `TooltipProvider` as
 it is, imported from `@/components/ui/tooltip` at the root of your app: it has
 no `TooltipPopover` counterpart.
 
@@ -150,14 +144,29 @@ own, as everywhere in responsivecn:
 Set the prop on the Content for both sides, or in `popover={{...}}` for the
 Popover only. For a one-line tip, size the Popover to its text:
 
+<ComponentDemo>
+  <ComponentDemoRender>
+    <TooltipPopoverContentBoxExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
+
 ```tsx
 <TooltipPopoverContent popover={{ className: "w-auto max-w-xs", side: "top" }}>
 ```
+
+  </ComponentDemoCode>
+</ComponentDemo>
 
 ## Overriding the Popover
 
 Everything inside `popover={{...}}` is your installed Popover's own API, on the
 root, the Trigger and the Content:
+
+<ComponentDemo>
+  <ComponentDemoRender>
+    <TooltipPopoverOverrideExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
 
 ```tsx
 <TooltipPopover popover={{ modal: true }}>
@@ -167,6 +176,9 @@ root, the Trigger and the Content:
   </TooltipPopoverContent>
 </TooltipPopover>
 ```
+
+  </ComponentDemoCode>
+</ComponentDemo>
 
 The override is typed on your own Popover, so it takes only what your base
 has. On Base UI, `popover={{ openOnHover: true }}` on the Trigger also opens
@@ -220,11 +232,20 @@ Give an icon-only trigger an `aria-label` that names what the tip explains.
 Below 768px nothing opens until the trigger is pressed, so the label is all a
 screen reader gets up front:
 
+<ComponentDemo>
+  <ComponentDemoRender>
+    <TooltipPopoverAriaLabelExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
+
 ```tsx
 <TooltipPopoverTrigger aria-label="About response rate">
   <InfoIcon />
 </TooltipPopoverTrigger>
 ```
+
+  </ComponentDemoCode>
+</ComponentDemo>
 
 The width check is not a touch check: a tablet at 768px or wider gets the
 desktop Tooltip.

@@ -1,4 +1,4 @@
-import { siteUrl } from "@/lib/shared"
+import { registryNamespace, registryUrl } from "@/lib/shared"
 
 // Pair matrix and install-command strings for the home playground.
 // The matrix is a function: each desktop component has exactly one valid
@@ -57,9 +57,9 @@ export function clampWidth(width: number): number {
 }
 
 export function npxCommand(item: string): string {
-  return `npx shadcn add @responsivecn/${item}`
+  return `npx shadcn add ${registryNamespace}/${item}`
 }
 
 export function itemUrl(item: string): string {
-  return `${siteUrl}/r/${item}.json`
+  return `${registryUrl}/${item}.json`
 }

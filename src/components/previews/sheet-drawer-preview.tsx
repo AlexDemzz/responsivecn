@@ -9,7 +9,7 @@ import {
   SheetDrawerHeader,
   SheetDrawerTitle,
   SheetDrawerTrigger,
-} from "../../../registry/sheet-drawer/sheet-drawer"
+} from "@/components/ui/sheet-drawer"
 
 export function SheetDrawerPreview() {
   const isMobile = useIsMobile()

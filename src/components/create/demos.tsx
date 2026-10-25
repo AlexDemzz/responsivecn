@@ -10,7 +10,7 @@ import {
   DialogDrawerHeader,
   DialogDrawerTitle,
   DialogDrawerTrigger,
-} from "../../../registry/dialog-drawer/dialog-drawer"
+} from "@/components/ui/dialog-drawer"
 import {
   SheetDrawer,
   SheetDrawerClose,
@@ -20,7 +20,7 @@ import {
   SheetDrawerHeader,
   SheetDrawerTitle,
   SheetDrawerTrigger,
-} from "../../../registry/sheet-drawer/sheet-drawer"
+} from "@/components/ui/sheet-drawer"
 import {
   PopoverDrawer,
   PopoverDrawerContent,
@@ -28,12 +28,12 @@ import {
   PopoverDrawerHeader,
   PopoverDrawerTitle,
   PopoverDrawerTrigger,
-} from "../../../registry/popover-drawer/popover-drawer"
+} from "@/components/ui/popover-drawer"
 import {
   TooltipPopover,
   TooltipPopoverContent,
   TooltipPopoverTrigger,
-} from "../../../registry/tooltip-popover/tooltip-popover"
+} from "@/components/ui/tooltip-popover"
 import type { PairSlug } from "./pairs"
 
 // Live demos wired to the REAL registry components. They render inside the

@@ -1,18 +1,12 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared"
-import { Mark } from "@/components/mark"
-import { appName, githubUrl } from "./shared"
+import { DocsBreadcrumb } from "@/components/docs-breadcrumb"
 
 export function baseOptions(): BaseLayoutProps {
   return {
-    nav: {
-      title: (
-        <span className="group/mark inline-flex items-center gap-2 font-medium">
-          <Mark className="size-5" />
-          {appName}
-        </span>
-      ),
-    },
-    githubUrl,
+    // A function title replaces the default link to "/", which would nest
+    // the breadcrumb's own links inside it.
+    nav: { title: () => <DocsBreadcrumb /> },
     themeSwitch: { enabled: false },
+    searchToggle: { enabled: false },
   }
 }

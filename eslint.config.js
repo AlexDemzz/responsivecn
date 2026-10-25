@@ -15,12 +15,6 @@ export default [
     },
   },
   {
-    files: ["registry/**"],
-    rules: {
-      "@typescript-eslint/naming-convention": "off",
-    },
-  },
-  {
     ignores: [
       "eslint.config.js",
       ".prettierrc",
@@ -28,6 +22,7 @@ export default [
       "prototypes/**",
       "src/components/ui/**",
       "src/lib/utils.ts",
+      "src/lib/highlighter.tsx",
     ],
   },
 ]

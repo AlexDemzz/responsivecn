@@ -1,6 +1,6 @@
 # responsivecn
 
-A shadcn registry of responsive overlays. Each component renders the desktop
+Responsive shadcn overlays. Each component renders the desktop
 component at 768px and up, and its mobile counterpart below:
 
 | Pair              | Responsive component |
@@ -16,21 +16,32 @@ component: same props, on the root and on every part.
 
 ## Install
 
-In a shadcn project:
+The components ship from the [`@alexandrejoly`](https://alexandrejoly.me)
+registry, listed in the shadcn registry directory. In a shadcn project:
 
 ```bash
-npx shadcn@latest add @responsivecn/dialog-drawer
+npx shadcn@latest add @alexandrejoly/dialog-drawer
 ```
 
-If the `@responsivecn` namespace does not resolve yet, use the full URL:
+Or by URL:
 
 ```bash
-npx shadcn@latest add https://responsive-cn.dev/r/dialog-drawer.json
+npx shadcn@latest add https://alexandrejoly.me/r/dialog-drawer.json
+```
+
+To pin the namespace, add it to the `registries` field of `components.json`:
+
+```json
+{
+  "registries": {
+    "@alexandrejoly": "https://alexandrejoly.me/r/{name}.json"
+  }
+}
 ```
 
 ## Docs
 
-Read the docs at [responsive-cn.dev/docs](https://responsive-cn.dev/docs).
+Read the docs at [responsivecn.alexandrejoly.me/docs](https://responsivecn.alexandrejoly.me/docs).
 
 ## Development
 
@@ -38,5 +49,13 @@ Read the docs at [responsive-cn.dev/docs](https://responsive-cn.dev/docs).
 pnpm install
 pnpm dev               # docs site on http://localhost:3000
 pnpm test              # unit tests
-pnpm registry:build    # builds the registry into public/r
+```
+
+The component source lives in the alexandrejoly.me repository
+(`apps/web/registry/`), along with its tests. This site installs the
+components like any consumer, into `src/components/ui/`. To pick up a new
+version, reinstall it:
+
+```bash
+npx shadcn@latest add @alexandrejoly/dialog-drawer --overwrite
 ```

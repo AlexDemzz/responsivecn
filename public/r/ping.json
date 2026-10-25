@@ -1,6 +1,0 @@
-{
-  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "ping",
-  "type": "registry:file",
-  "description": "Static-asset probe proving the /r/ registry contract (200 application/json + ETag, true 404 on miss)."
-}

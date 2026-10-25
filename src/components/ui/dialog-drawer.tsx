@@ -2,18 +2,17 @@
 
 import * as React from "react"
 
-import { useIsMobile } from "@/hooks/use-mobile"
-import { cn } from "@/lib/utils"
+import { buttonVariants } from "@/components/ui/button"
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import {
   Drawer,
   DrawerClose,
@@ -24,6 +23,8 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { cn } from "@/lib/utils"
 
 type Override<Props, Keys extends PropertyKey = never> = Props extends unknown
   ? Omit<Props, "children" | Keys>
@@ -108,58 +109,45 @@ function callOpenChange(handler: unknown, args: unknown[]) {
   return details?.isCanceled !== true
 }
 
-const SIDE_TO_DRAWER_EDGE = new Map<unknown, object>([
-  ["top", { swipeDirection: "up", direction: "top" }],
-  ["right", { swipeDirection: "right", direction: "right" }],
-  ["bottom", { swipeDirection: "down", direction: "bottom" }],
-  ["left", { swipeDirection: "left", direction: "left" }],
-])
-
 const ROOT_DESKTOP_ONLY = ["handle", "triggerId", "defaultTriggerId"]
 
 const TRIGGER_DESKTOP_ONLY = ["handle", "payload"]
 
-const CONTENT_DESKTOP_ONLY = ["side", "showCloseButton"]
+const CONTENT_DESKTOP_ONLY = ["showCloseButton"]
 
-type SheetDrawerContextValue = {
-  isMobile: boolean
-  setSide: (side: unknown) => void
-}
-
-const SheetDrawerContext = React.createContext<SheetDrawerContextValue | null>(
+const DialogDrawerContext = React.createContext<{ isMobile: boolean } | null>(
   null
 )
 
-function useSheetDrawer() {
-  const context = React.useContext(SheetDrawerContext)
+function useDialogDrawer() {
+  const context = React.useContext(DialogDrawerContext)
 
   if (!context) {
-    throw new Error("SheetDrawer parts must be used within a SheetDrawer.")
+    throw new Error("DialogDrawer parts must be used within a DialogDrawer.")
   }
 
   return context
 }
 
-type SheetDrawerProps = React.ComponentProps<typeof Sheet> & {
+type DialogDrawerProps = React.ComponentProps<typeof Dialog> & {
   drawer?: Override<
     React.ComponentProps<typeof Drawer>,
     "open" | "defaultOpen" | "handle" | "triggerId" | "defaultTriggerId"
   >
 }
 
-function SheetDrawer({
+function DialogDrawer({
   drawer,
   open: openProp,
   defaultOpen = false,
   onOpenChange,
   children,
   ...props
-}: SheetDrawerProps) {
+}: DialogDrawerProps) {
   const isMobile = useIsMobile()
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
-  const [side, setSide] = React.useState<unknown>()
   const open = openProp ?? uncontrolledOpen
-  const contextValue = React.useMemo(() => ({ isMobile, setSide }), [isMobile])
+  const contextValue = React.useMemo(() => ({ isMobile }), [isMobile])
 
   const handleOpenChange = React.useCallback(
     (nextOpen: boolean, ...details: unknown[]) => {
@@ -171,17 +159,11 @@ function SheetDrawer({
   )
 
   return (
-    <SheetDrawerContext.Provider value={contextValue}>
+    <DialogDrawerContext.Provider value={contextValue}>
       {isMobile ? (
         <Drawer
           {...toMobileRootProps<React.ComponentProps<typeof Drawer>>(
-            {
-              autoFocus: true,
-              ...SIDE_TO_DRAWER_EDGE.get(side),
-              ...props,
-              open,
-              onOpenChange: handleOpenChange,
-            },
+            { autoFocus: true, ...props, open, onOpenChange: handleOpenChange },
             drawer,
             ROOT_DESKTOP_ONLY
           )}
@@ -189,48 +171,42 @@ function SheetDrawer({
           {children}
         </Drawer>
       ) : (
-        <Sheet {...props} open={open} onOpenChange={handleOpenChange}>
+        <Dialog {...props} open={open} onOpenChange={handleOpenChange}>
           {children}
-        </Sheet>
+        </Dialog>
       )}
-    </SheetDrawerContext.Provider>
+    </DialogDrawerContext.Provider>
   )
 }
 
-type SheetDrawerTriggerProps = React.ComponentProps<typeof SheetTrigger> & {
+type DialogDrawerTriggerProps = React.ComponentProps<typeof DialogTrigger> & {
   drawer?: Override<
     React.ComponentProps<typeof DrawerTrigger>,
     "handle" | "payload"
   >
 }
 
-function SheetDrawerTrigger({ drawer, ...props }: SheetDrawerTriggerProps) {
-  const context = React.useContext(SheetDrawerContext)
+function DialogDrawerTrigger({ drawer, ...props }: DialogDrawerTriggerProps) {
+  const context = React.useContext(DialogDrawerContext)
 
   if (context?.isMobile) {
     return (
       <DrawerTrigger {...toMobileProps(props, drawer, TRIGGER_DESKTOP_ONLY)} />
     )
   }
-  return <SheetTrigger {...props} />
+  return <DialogTrigger {...props} />
 }
 
-type SheetDrawerContentProps = React.ComponentProps<typeof SheetContent> & {
+type DialogDrawerContentProps = React.ComponentProps<typeof DialogContent> & {
   drawer?: Override<React.ComponentProps<typeof DrawerContent>>
 }
 
-function SheetDrawerContent({
+function DialogDrawerContent({
   drawer,
   children,
   ...props
-}: SheetDrawerContentProps) {
-  const { isMobile, setSide } = useSheetDrawer()
-  const { side } = props
-
-  React.useEffect(() => {
-    setSide(side)
-    return () => setSide(undefined)
-  }, [side, setSide])
+}: DialogDrawerContentProps) {
+  const { isMobile } = useDialogDrawer()
 
   if (isMobile) {
     return (
@@ -239,86 +215,104 @@ function SheetDrawerContent({
       </DrawerContent>
     )
   }
-  return <SheetContent {...props}>{children}</SheetContent>
+  return <DialogContent {...props}>{children}</DialogContent>
 }
 
-type SheetDrawerHeaderProps = React.ComponentProps<typeof SheetHeader> & {
+type DialogDrawerHeaderProps = React.ComponentProps<typeof DialogHeader> & {
   drawer?: Override<React.ComponentProps<typeof DrawerHeader>>
 }
 
-function SheetDrawerHeader({ drawer, ...props }: SheetDrawerHeaderProps) {
-  const { isMobile } = useSheetDrawer()
+function DialogDrawerHeader({ drawer, ...props }: DialogDrawerHeaderProps) {
+  const { isMobile } = useDialogDrawer()
 
   if (isMobile) {
     return <DrawerHeader {...toMobileProps(props, drawer)} />
   }
-  return <SheetHeader {...props} />
+  return <DialogHeader {...props} />
 }
 
-type SheetDrawerFooterProps = React.ComponentProps<typeof SheetFooter> & {
+type DialogDrawerFooterProps = React.ComponentProps<typeof DialogFooter> & {
   drawer?: Override<React.ComponentProps<typeof DrawerFooter>>
 }
 
-function SheetDrawerFooter({ drawer, ...props }: SheetDrawerFooterProps) {
-  const { isMobile } = useSheetDrawer()
+function DialogDrawerFooter({
+  drawer,
+  showCloseButton,
+  children,
+  ...props
+}: DialogDrawerFooterProps) {
+  const { isMobile } = useDialogDrawer()
 
   if (isMobile) {
-    return <DrawerFooter {...toMobileProps(props, drawer)} />
+    return (
+      <DrawerFooter {...toMobileProps(props, drawer)}>
+        {children}
+        {showCloseButton && (
+          <DrawerClose className={buttonVariants({ variant: "outline" })}>
+            Close
+          </DrawerClose>
+        )}
+      </DrawerFooter>
+    )
   }
-  return <SheetFooter {...props} />
+  return (
+    <DialogFooter showCloseButton={showCloseButton} {...props}>
+      {children}
+    </DialogFooter>
+  )
 }
 
-type SheetDrawerTitleProps = React.ComponentProps<typeof SheetTitle> & {
+type DialogDrawerTitleProps = React.ComponentProps<typeof DialogTitle> & {
   drawer?: Override<React.ComponentProps<typeof DrawerTitle>>
 }
 
-function SheetDrawerTitle({ drawer, ...props }: SheetDrawerTitleProps) {
-  const { isMobile } = useSheetDrawer()
+function DialogDrawerTitle({ drawer, ...props }: DialogDrawerTitleProps) {
+  const { isMobile } = useDialogDrawer()
 
   if (isMobile) {
     return <DrawerTitle {...toMobileProps(props, drawer)} />
   }
-  return <SheetTitle {...props} />
+  return <DialogTitle {...props} />
 }
 
-type SheetDrawerDescriptionProps = React.ComponentProps<
-  typeof SheetDescription
+type DialogDrawerDescriptionProps = React.ComponentProps<
+  typeof DialogDescription
 > & {
   drawer?: Override<React.ComponentProps<typeof DrawerDescription>>
 }
 
-function SheetDrawerDescription({
+function DialogDrawerDescription({
   drawer,
   ...props
-}: SheetDrawerDescriptionProps) {
-  const { isMobile } = useSheetDrawer()
+}: DialogDrawerDescriptionProps) {
+  const { isMobile } = useDialogDrawer()
 
   if (isMobile) {
     return <DrawerDescription {...toMobileProps(props, drawer)} />
   }
-  return <SheetDescription {...props} />
+  return <DialogDescription {...props} />
 }
 
-type SheetDrawerCloseProps = React.ComponentProps<typeof SheetClose> & {
+type DialogDrawerCloseProps = React.ComponentProps<typeof DialogClose> & {
   drawer?: Override<React.ComponentProps<typeof DrawerClose>>
 }
 
-function SheetDrawerClose({ drawer, ...props }: SheetDrawerCloseProps) {
-  const { isMobile } = useSheetDrawer()
+function DialogDrawerClose({ drawer, ...props }: DialogDrawerCloseProps) {
+  const { isMobile } = useDialogDrawer()
 
   if (isMobile) {
     return <DrawerClose {...toMobileProps(props, drawer)} />
   }
-  return <SheetClose {...props} />
+  return <DialogClose {...props} />
 }
 
 export {
-  SheetDrawer,
-  SheetDrawerClose,
-  SheetDrawerContent,
-  SheetDrawerDescription,
-  SheetDrawerFooter,
-  SheetDrawerHeader,
-  SheetDrawerTitle,
-  SheetDrawerTrigger,
+  DialogDrawer,
+  DialogDrawerClose,
+  DialogDrawerContent,
+  DialogDrawerDescription,
+  DialogDrawerFooter,
+  DialogDrawerHeader,
+  DialogDrawerTitle,
+  DialogDrawerTrigger,
 }

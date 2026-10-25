@@ -2,17 +2,6 @@
 
 import * as React from "react"
 
-import { useIsMobile } from "@/hooks/use-mobile"
-import { cn } from "@/lib/utils"
-import * as PopoverParts from "@/components/ui/popover"
-import {
-  Popover,
-  PopoverContent,
-  PopoverDescription,
-  PopoverHeader,
-  PopoverTitle,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import {
   Drawer,
   DrawerContent,
@@ -22,6 +11,17 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
+import * as PopoverParts from "@/components/ui/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { cn } from "@/lib/utils"
 
 type Override<Props, Keys extends PropertyKey = never> = Props extends unknown
   ? Omit<Props, "children" | Keys>

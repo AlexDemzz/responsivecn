@@ -1,0 +1,42 @@
+name: CI
+
+# The components ship from the @alexandrejoly registry
+# (https://alexandrejoly.me/r/{name}.json); this repo installs them like any
+# consumer, so CI only checks the docs site.
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck and build
+    runs-on: ubuntu-latest
+    # workerd/esbuild/sharp need their build scripts (allow-listed via the
+    # package.json pnpm.onlyBuiltDependencies field); SHARP_IGNORE_GLOBAL_LIBVIPS
+    # forces sharp's prebuilt binary instead of a source build.
+    env:
+      SHARP_IGNORE_GLOBAL_LIBVIPS: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      # Reads the pnpm version from package.json's packageManager field.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Build the site
+        run: pnpm run build

@@ -12,7 +12,8 @@ shadcn conventions: open code, a registry install, compound components.
 
 A **pair** is a curated desktop→mobile combination. Each pair produces a
 **responsive component**: a drop-in replacement for the desktop component that
-renders the mobile one below the breakpoint. Four pairs exist:
+renders the mobile one below the [breakpoint](/docs/breakpoint). Four pairs
+exist:
 
 | Pair              | Responsive component                       |
 | ----------------- | ------------------------------------------ |
@@ -31,100 +32,14 @@ your Dialog, Sheet, Popover or Tooltip, including `render` on Base UI and
 have a different part structure, so a drop-in replacement cannot map onto
 them.
 
-## Installation
+## What these docs cover
 
-```bash
-npx shadcn@latest add @responsivecn/dialog-drawer
-```
+[Installation](/docs/installation), the [breakpoint](/docs/breakpoint) and the
+[override prop](/docs/override-prop) work the same for every component, so
+each has its own page. A component page covers only what is specific to its
+pair.
 
-<Callout title="Namespace resolution">
-
-Until the `@responsivecn` namespace resolves globally in the shadcn CLI, the
-full URL form works everywhere:
-
-```bash
-npx shadcn@latest add https://responsive-cn.dev/r/dialog-drawer.json
-```
-
-</Callout>
-
-The install adds the official shadcn items the component builds on
-(`dialog`, `drawer`, `use-mobile`, …) as registry dependencies. You get the
-standard shadcn components, not copies of them.
-
-## Migrating
-
-A responsive component takes the desktop component's props 1:1, on the root
-and on every part. To migrate, change your imports and the tag names, nothing
-else:
-
-```diff
-- import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog"
-+ import { DialogDrawer, DialogDrawerTrigger, DialogDrawerContent } from "@/components/ui/dialog-drawer"
-```
-
-Each part name inserts the mobile side's name after the desktop one:
-`DialogContent` becomes `DialogDrawerContent`, and so on. Same props, same
-children.
-
-## The override prop
-
-You tune the mobile side through the **override prop**, named after the
-mobile side of the pair: `drawer={{...}}` on `DialogDrawer`, `SheetDrawer` and
-`PopoverDrawer`, `popover={{...}}` on `TooltipPopover`. It exists on the root
-**and on every part that has a mobile counterpart**, and is typed 1:1 on your
-installed mobile component (your Drawer, built on Base UI or Vaul, or your Popover),
-so you need no casts.
-
-```tsx
-<DialogDrawer drawer={{ snapPoints: [0.5, 1] }}>
-  <DialogDrawerTrigger className="w-full">Open</DialogDrawerTrigger>
-  <DialogDrawerContent
-    className="md:max-w-lg"
-    drawer={{ className: "max-h-[80dvh]" }}
-  >
-    …
-  </DialogDrawerContent>
-</DialogDrawer>
-```
-
-The merge rules are the same for all four pairs. Only the prop name changes:
-
-- **`className` merges** as `cn(shared, mobile)`: the shared class still
-  applies below the breakpoint, and the mobile one wins on conflicts.
-- **State callbacks compose**: for the root's state callbacks (`onOpenChange`,
-  `onOpenChangeComplete`), the shared handler runs first, then the mobile one.
-- **Every other prop replaces** the shared value below the breakpoint.
-
-Outside the override prop, each side keeps its native defaults. A shared
-prop you set is forwarded to both sides, except the desktop-only props each
-page lists. Nothing is mapped between the two APIs for you, with one
-exception: `SheetDrawer` passes the Sheet's `side` to the drawer edge (see
-[The drawer edge](/docs/sheet-drawer#the-drawer-edge)). A `PopoverDrawer`
-therefore opens its drawer from the bottom, wherever the Popover is placed.
-
-## How it works
-
-The **breakpoint** is fixed at 768px, read through the standard shadcn
-`use-mobile` hook, the same one the shadcn Sidebar uses. At 768px and up the
-desktop component renders, below it the mobile one. This is a conditional
-render, not CSS: only one side is mounted at a time.
-
-<Callout type="info" title="What carries over the breakpoint">
-
-Crossing 768px unmounts one side and mounts the other. Every responsive
-component holds the open state itself, so an uncontrolled overlay that is open
-stays open on the other side. State held _inside_ the overlay does not carry
-over: uncontrolled form fields reset. Keep values you cannot afford to lose in
-your own state or a form library.
-
-</Callout>
-
-## These docs
-
-Each component has its own page in the sidebar, covering only what is
-specific to its pair: the mechanism above is not repeated there. These docs do
-not cover the underlying components either. For their APIs, see the
+The underlying components are documented upstream. For their APIs, see the
 [shadcn/ui docs](https://ui.shadcn.com/docs/components), the
 [Base UI docs](https://base-ui.com/react/components) and the
 [Radix docs](https://www.radix-ui.com/primitives).

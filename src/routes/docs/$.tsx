@@ -16,6 +16,7 @@ import { docsSeo } from "@/lib/docs-seo"
 import { pageHead } from "@/lib/seo"
 import { legacyDocsRedirect } from "@/lib/legacy-docs"
 import { useMDXComponents } from "@/components/mdx"
+import { DocsSidebarFooter } from "@/components/docs-sidebar-footer"
 
 export const Route = createFileRoute("/docs/$")({
   component: Page,
@@ -80,7 +81,11 @@ function Page() {
   const { path, pageTree } = useFumadocsLoader(Route.useLoaderData())
 
   return (
-    <DocsLayout {...baseOptions()} tree={pageTree}>
+    <DocsLayout
+      {...baseOptions()}
+      tree={pageTree}
+      sidebar={{ footer: <DocsSidebarFooter />, collapsible: false }}
+    >
       <Suspense>{clientLoader.useContent(path)}</Suspense>
     </DocsLayout>
   )

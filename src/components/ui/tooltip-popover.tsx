@@ -2,8 +2,6 @@
 
 import * as React from "react"
 
-import { useIsMobile } from "@/hooks/use-mobile"
-import { cn } from "@/lib/utils"
 import {
   Popover,
   PopoverContent,
@@ -14,6 +12,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { cn } from "@/lib/utils"
 
 type Override<Props, Keys extends PropertyKey = never> = Props extends unknown
   ? Omit<Props, "children" | Keys>

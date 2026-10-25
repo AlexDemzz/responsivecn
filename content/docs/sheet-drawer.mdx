@@ -7,8 +7,9 @@ A drop-in replacement for the shadcn
 [Sheet](https://ui.shadcn.com/docs/components/sheet): at 768px and up it
 renders your Sheet unchanged; below, the same children render inside your
 [Drawer](https://ui.shadcn.com/docs/components/drawer), anchored to the edge
-you set with `side`. The shared mechanism (breakpoint, override prop, merge rules) is
-documented once in the [Introduction](/docs).
+you set with `side`. The [breakpoint](/docs/breakpoint) and the
+[override prop](/docs/override-prop) work the same for every pair, so this
+page covers only what is specific to this one.
 
 <ComponentDemo>
   <ComponentDemoRender>
@@ -64,15 +65,8 @@ export function WorkspaceMenu() {
 
 <Step>
 
-Configure the `@responsivecn` namespace first: see
-[Installation](/docs#installation) in the Introduction.
-
-</Step>
-
-<Step>
-
 ```bash
-npx shadcn@latest add @responsivecn/sheet-drawer
+npx shadcn@latest add @alexandrejoly/sheet-drawer
 ```
 
 </Step>
@@ -89,7 +83,7 @@ Update the import paths to match your project setup.
 
 Change the imports and insert `Drawer` after `Sheet` in each part name:
 `SheetContent` becomes `SheetDrawerContent`, and so on, with the same props
-and children ([Migrating](/docs#migrating) in the Introduction). Then check
+and children (see [Migrating](/docs/installation#migrating)). Then check
 three things below 768px: width classes on the Content (see
 [Sizing classes](#sizing-classes)), sheets that rely on the built-in close
 button, and detached triggers (both in
@@ -146,6 +140,12 @@ root, where it also drives the swipe gesture. `SheetDrawerContent` passes its
 swipes the same way. This works wherever the Content sits: inside a Fragment,
 behind a condition or in your own component.
 
+<ComponentDemo>
+  <ComponentDemoRender>
+    <SheetDrawerLeftExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
+
 ```tsx
 <SheetDrawer>
   <SheetDrawerTrigger>Open menu</SheetDrawerTrigger>
@@ -154,12 +154,21 @@ behind a condition or in your own component.
 </SheetDrawer>
 ```
 
+  </ComponentDemoCode>
+</ComponentDemo>
+
 Without `side`, each component keeps its own default: the Sheet opens from
 the right, the Drawer from the bottom. Write `side="right"` to get a right
 drawer too.
 
 To pick another edge below 768px only, set it on the root override. It wins
 over `side`:
+
+<ComponentDemo>
+  <ComponentDemoRender>
+    <SheetDrawerSwipeDownExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
 
 ```tsx
 <SheetDrawer drawer={{ swipeDirection: "down" }}>
@@ -168,19 +177,30 @@ over `side`:
 </SheetDrawer>
 ```
 
+  </ComponentDemoCode>
+</ComponentDemo>
+
 ## Sizing classes
 
-The `className` on `SheetDrawerContent` applies to both sides. A width such as
-`w-[400px] sm:w-[540px]` therefore also narrows a bottom drawer, and `sm:`
-starts at 640px, below the breakpoint. Reset every width in the override, or
-scope the width to 768px and up with `md:`:
+The `className` on `SheetDrawerContent` applies to both sides. Your Sheet sets
+its width under a `data-[side=…]` prefix, such as
+`data-[side=right]:sm:max-w-sm`, so widen it with the same prefix: `cn`
+replaces the matching class, and the drawer, which has no `data-side`, ignores
+it. A width without that prefix, such as `w-[400px]`, also narrows the drawer
+below 768px. Reset it in the override with the same prefix.
+
+<ComponentDemo>
+  <ComponentDemoRender>
+    <SheetDrawerSizingExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
 
 ```tsx
-<SheetDrawerContent
-  className="w-[400px] sm:w-[540px]"
-  drawer={{ className: "w-auto sm:w-auto" }}
->
+<SheetDrawerContent side="right" className="data-[side=right]:sm:max-w-lg">
 ```
+
+  </ComponentDemoCode>
+</ComponentDemo>
 
 ## Opening on load
 

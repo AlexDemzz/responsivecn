@@ -6,9 +6,10 @@ description: An anchored Popover at desktop that becomes a swipeable Drawer belo
 A drop-in replacement for the shadcn
 [Popover](https://ui.shadcn.com/docs/components/popover): at 768px and up it
 renders your Popover unchanged; below, the same children render inside your
-[Drawer](https://ui.shadcn.com/docs/components/drawer). The shared mechanism
-(breakpoint, override prop, merge rules) is documented once in the
-[Introduction](/docs).
+[Drawer](https://ui.shadcn.com/docs/components/drawer). The
+[breakpoint](/docs/breakpoint) and the [override prop](/docs/override-prop)
+work the same for every pair, so this page covers only what is specific to
+this one.
 
 <ComponentDemo>
   <ComponentDemoRender>
@@ -62,15 +63,8 @@ export function Dimensions() {
 
 <Step>
 
-Configure the `@responsivecn` namespace first: see
-[Installation](/docs#installation) in the Introduction.
-
-</Step>
-
-<Step>
-
 ```bash
-npx shadcn@latest add @responsivecn/popover-drawer
+npx shadcn@latest add @alexandrejoly/popover-drawer
 ```
 
 </Step>
@@ -87,7 +81,7 @@ Update the import paths to match your project setup.
 
 Change the imports and insert `Drawer` after `Popover` in each part name:
 `PopoverContent` becomes `PopoverDrawerContent`, and so on, with the same
-props and children ([Migrating](/docs#migrating) in the Introduction). Then
+props and children (see [Migrating](/docs/installation#migrating)). Then
 check two things below 768px: the
 [desktop-only props](#desktop-only-props), and a title on every content (see
 [Accessibility](#accessibility)).
@@ -137,9 +131,18 @@ the Popover's column layout, so children written for the Popover render the
 same way in the Drawer. The `className` you pass to `PopoverDrawerContent`
 styles that box; `drawer={{ className }}` styles the drawer itself:
 
+<ComponentDemo>
+  <ComponentDemoRender>
+    <PopoverDrawerContentBoxExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
+
 ```tsx
 <PopoverDrawerContent className="w-80" drawer={{ className: "max-h-[80dvh]" }}>
 ```
+
+  </ComponentDemoCode>
+</ComponentDemo>
 
 A width such as `w-80` therefore sizes the content, centered in a full-width
 drawer, instead of shrinking the drawer to a 320px panel.
@@ -153,9 +156,18 @@ each side keeps its own default: an anchored popover that closes on an outside
 click at 768px and up, a drawer with an overlay below. Set `modal` to apply
 it to both sides, or `drawer={{ modal }}` to change only the drawer:
 
+<ComponentDemo>
+  <ComponentDemoRender>
+    <PopoverDrawerNonModalExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
+
 ```tsx
 <PopoverDrawer drawer={{ modal: false }}>
 ```
+
+  </ComponentDemoCode>
+</ComponentDemo>
 
 ## The footer part
 
@@ -165,6 +177,12 @@ and up, your `DrawerFooter` below.
 
 To close from a button inside the content, control `open`, as you would with
 the Popover:
+
+<ComponentDemo>
+  <ComponentDemoRender>
+    <PopoverDrawerFooterExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
 
 ```tsx
 const [open, setOpen] = React.useState(false)
@@ -181,6 +199,9 @@ const [open, setOpen] = React.useState(false)
   </PopoverDrawerContent>
 </PopoverDrawer>
 ```
+
+  </ComponentDemoCode>
+</ComponentDemo>
 
 ## Desktop-only props
 
@@ -205,9 +226,18 @@ Below 768px the content is a dialog, and a dialog needs a name. A popover
 without a title gets none: add a `PopoverDrawerTitle`, visually hidden if the
 design has no heading.
 
+<ComponentDemo>
+  <ComponentDemoRender>
+    <PopoverDrawerHiddenTitleExample />
+  </ComponentDemoRender>
+  <ComponentDemoCode>
+
 ```tsx
 <PopoverDrawerTitle className="sr-only">Filters</PopoverDrawerTitle>
 ```
+
+  </ComponentDemoCode>
+</ComponentDemo>
 
 ## API reference
 

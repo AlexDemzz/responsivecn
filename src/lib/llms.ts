@@ -1,5 +1,11 @@
 import { PAIRS, itemUrl } from "@/components/create/pairs"
-import { appName, githubUrl, siteUrl } from "@/lib/shared"
+import {
+  appName,
+  githubUrl,
+  registryNamespace,
+  registryUrl,
+  siteUrl,
+} from "@/lib/shared"
 import { homeSeo, markdownUrl } from "@/lib/seo"
 
 export type DocsEntry = { path: string; title: string; description: string }
@@ -21,10 +27,10 @@ export function llmsTxt(docs: DocsEntry[]): string {
     "",
     "## Install",
     "",
-    "Install a component with the shadcn CLI, from the `@responsivecn` namespace or by URL. It adds one file to `components/ui/`, plus the shadcn components it builds on.",
+    `Install a component with the shadcn CLI, from the \`${registryNamespace}\` namespace (listed in the shadcn registry directory) or by URL. It adds one file to \`components/ui/\`, plus the shadcn components it builds on.`,
     "",
     "```bash",
-    "npx shadcn@latest add @responsivecn/dialog-drawer",
+    `npx shadcn@latest add ${registryNamespace}/dialog-drawer`,
     `npx shadcn@latest add ${itemUrl("dialog-drawer")}`,
     "```",
     "",
@@ -37,7 +43,7 @@ export function llmsTxt(docs: DocsEntry[]): string {
     "",
     "## Registry",
     "",
-    `- [Catalog](${siteUrl}/r/registry.json): every registry item, without file contents.`,
+    `- [Catalog](${registryUrl}/registry.json): every item of the ${registryNamespace} registry, without file contents.`,
     ...PAIRS.map(
       (pair) =>
         `- [${pair.slug}](${itemUrl(pair.slug)}): ${pair.desktop} on desktop, ${pair.mobile} on mobile.`
@@ -46,7 +52,7 @@ export function llmsTxt(docs: DocsEntry[]): string {
     "## Optional",
     "",
     `- [Full docs](${siteUrl}/llms-full.txt): every docs page in one Markdown file.`,
-    `- [Source code](${githubUrl}): the registry and this site.`,
+    `- [Source code](${githubUrl}): this site.`,
     "",
   ].join("\n")
 }

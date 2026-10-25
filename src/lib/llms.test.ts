@@ -27,22 +27,22 @@ describe("llmsTxt", () => {
 
   it("links each docs page to its Markdown twin", () => {
     expect(text).toContain(
-      "- [DialogDrawer](https://responsive-cn.dev/docs/dialog-drawer.md): A centered Dialog at desktop."
+      "- [DialogDrawer](https://responsivecn.alexandrejoly.me/docs/dialog-drawer.md): A centered Dialog at desktop."
     )
     expect(text).toContain(
-      "- [Introduction](https://responsive-cn.dev/docs.md): Responsive shadcn/ui overlays."
+      "- [Introduction](https://responsivecn.alexandrejoly.me/docs.md): Responsive shadcn/ui overlays."
     )
   })
 
   it("lists the installable registry items", () => {
-    expect(text).toContain("https://responsive-cn.dev/r/registry.json")
+    expect(text).toContain("https://alexandrejoly.me/r/registry.json")
     for (const slug of [
       "dialog-drawer",
       "sheet-drawer",
       "popover-drawer",
       "tooltip-popover",
     ]) {
-      expect(text).toContain(`https://responsive-cn.dev/r/${slug}.json`)
+      expect(text).toContain(`https://alexandrejoly.me/r/${slug}.json`)
     }
   })
 
@@ -54,11 +54,11 @@ describe("llmsTxt", () => {
 describe("llmsFullTxt", () => {
   it("joins every page's Markdown under its canonical URL", () => {
     const text = llmsFullTxt([
-      { url: "https://responsive-cn.dev/docs", markdown: "# Introduction" },
-      { url: "https://responsive-cn.dev/docs/x", markdown: "# X" },
+      { url: "https://responsivecn.alexandrejoly.me/docs", markdown: "# Introduction" },
+      { url: "https://responsivecn.alexandrejoly.me/docs/x", markdown: "# X" },
     ])
     expect(text.indexOf("# Introduction")).toBeLessThan(text.indexOf("# X"))
-    expect(text).toContain("Source: https://responsive-cn.dev/docs/x")
+    expect(text).toContain("Source: https://responsivecn.alexandrejoly.me/docs/x")
   })
 })
 
@@ -69,15 +69,15 @@ describe("sitemapXml", () => {
     expect(xml).toContain(
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
     )
-    expect(xml).toContain("<loc>https://responsive-cn.dev/</loc>")
+    expect(xml).toContain("<loc>https://responsivecn.alexandrejoly.me/</loc>")
     expect(xml).toContain(
-      "<loc>https://responsive-cn.dev/docs/dialog-drawer</loc>"
+      "<loc>https://responsivecn.alexandrejoly.me/docs/dialog-drawer</loc>"
     )
   })
 
   it("escapes XML special characters", () => {
     expect(sitemapXml(["/a&b"])).toContain(
-      "<loc>https://responsive-cn.dev/a&amp;b</loc>"
+      "<loc>https://responsivecn.alexandrejoly.me/a&amp;b</loc>"
     )
   })
 })

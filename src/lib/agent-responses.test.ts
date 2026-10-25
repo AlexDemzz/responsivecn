@@ -11,7 +11,7 @@ async function resolve(path: string) {
 }
 
 function get(path: string, accept?: string): Request {
-  return new Request(`https://responsive-cn.dev${path}`, {
+  return new Request(`https://responsivecn.alexandrejoly.me${path}`, {
     headers: accept ? { accept } : {},
   })
 }
@@ -32,7 +32,7 @@ describe("agentResponse", () => {
     expect(response?.status).toBe(200)
     expect(await response?.text()).toBe("# DialogDrawer\n")
     expect(response?.headers.get("link")).toBe(
-      '<https://responsive-cn.dev/docs/dialog-drawer>; rel="canonical"'
+      '<https://responsivecn.alexandrejoly.me/docs/dialog-drawer>; rel="canonical"'
     )
   })
 
@@ -43,7 +43,7 @@ describe("agentResponse", () => {
     )
     expect(response?.status).toBe(404)
     expect(await response?.text()).toContain(
-      "https://responsive-cn.dev/llms.txt"
+      "https://responsivecn.alexandrejoly.me/llms.txt"
     )
   })
 
@@ -53,19 +53,4 @@ describe("agentResponse", () => {
     ).toBeUndefined()
   })
 
-  it("answers a missing registry item with a JSON problem", async () => {
-    const response = await agentResponse(get("/r/carousel-sheet.json"), resolve)
-    expect(response?.status).toBe(404)
-    expect(response?.headers.get("content-type")).toBe(
-      "application/problem+json"
-    )
-    const problem = await response?.json()
-    expect(problem).toMatchObject({
-      status: 404,
-      code: "registry_item_not_found",
-    })
-    expect(problem.resolution).toContain(
-      "https://responsive-cn.dev/r/registry.json"
-    )
-  })
 })

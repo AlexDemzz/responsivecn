@@ -1,21 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import registry from "../../../registry.json"
-import { PAIRS, parsePreviewSearch } from "./pairs"
-
-describe("PAIRS", () => {
-  it("lists every item the registry ships, in registry order", () => {
-    expect(PAIRS.map((pair) => pair.slug)).toEqual(
-      registry.items.map((item) => item.name)
-    )
-  })
-
-  it("names each pair the way the registry titles it", () => {
-    expect(PAIRS.map((pair) => `${pair.desktop} ${pair.mobile}`)).toEqual(
-      registry.items.map((item) => item.title)
-    )
-  })
-})
+import { parsePreviewSearch } from "./pairs"
 
 describe("parsePreviewSearch", () => {
   it("opens the requested pair when asked to", () => {

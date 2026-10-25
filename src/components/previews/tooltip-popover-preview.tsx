@@ -7,7 +7,7 @@ import {
   TooltipPopover,
   TooltipPopoverContent,
   TooltipPopoverTrigger,
-} from "../../../registry/tooltip-popover/tooltip-popover"
+} from "@/components/ui/tooltip-popover"
 
 export function TooltipPopoverPreview() {
   const isMobile = useIsMobile()
