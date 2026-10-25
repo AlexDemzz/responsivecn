@@ -11,7 +11,6 @@ import { parseFrontmatter } from "../src/lib/frontmatter.ts"
 import {
   OG_IMAGE_HEIGHT,
   OG_IMAGE_WIDTH,
-  createSeo,
   homeSeo,
   ogImagePath,
 } from "../src/lib/seo.ts"
@@ -172,12 +171,6 @@ async function ogPages(): Promise<OgPage[]> {
       eyebrow: "shadcn/ui registry",
       title: "Responsive shadcn/ui overlays",
       description: homeSeo.description,
-    },
-    {
-      path: createSeo.path,
-      eyebrow: "Playground",
-      title: "Watch each pair swap at 768px",
-      description: createSeo.description,
     },
     ...docs,
   ]

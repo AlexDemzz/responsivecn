@@ -1,6 +1,6 @@
 import { PAIRS, itemUrl } from "@/components/create/pairs"
 import { appName, githubUrl, siteUrl } from "@/lib/shared"
-import { createSeo, homeSeo, markdownUrl } from "@/lib/seo"
+import { homeSeo, markdownUrl } from "@/lib/seo"
 
 export type DocsEntry = { path: string; title: string; description: string }
 
@@ -15,13 +15,13 @@ export function llmsTxt(docs: DocsEntry[]): string {
     "",
     "## When to use",
     "",
-    "- A shadcn/ui project needs a Dialog, Sheet or Popover that becomes a bottom Drawer on phones, or a Tooltip that becomes a tap-to-open Popover on touch screens.",
+    "- A shadcn/ui project needs a Dialog, Sheet or Popover that becomes a swipeable Drawer below 768px, or a Tooltip that becomes a tap-to-open Popover below 768px.",
     "- The project uses the Base UI or Radix base of shadcn/ui. React Aria is not supported.",
     "- Not for a custom breakpoint: it is fixed at 768px.",
     "",
     "## Install",
     "",
-    "Install a component with the shadcn CLI, from the `@responsivecn` namespace or by URL. It adds one file to `components/ui/` and the shadcn components it builds on.",
+    "Install a component with the shadcn CLI, from the `@responsivecn` namespace or by URL. It adds one file to `components/ui/`, plus the shadcn components it builds on.",
     "",
     "```bash",
     "npx shadcn@latest add @responsivecn/dialog-drawer",
@@ -37,7 +37,7 @@ export function llmsTxt(docs: DocsEntry[]): string {
     "",
     "## Registry",
     "",
-    `- [Catalog](${siteUrl}/r/registry.json): every item of the shadcn registry, without file contents.`,
+    `- [Catalog](${siteUrl}/r/registry.json): every registry item, without file contents.`,
     ...PAIRS.map(
       (pair) =>
         `- [${pair.slug}](${itemUrl(pair.slug)}): ${pair.desktop} on desktop, ${pair.mobile} on mobile.`
@@ -45,7 +45,6 @@ export function llmsTxt(docs: DocsEntry[]): string {
     "",
     "## Optional",
     "",
-    `- [Playground](${markdownUrl(createSeo.path)}): ${createSeo.description}`,
     `- [Full docs](${siteUrl}/llms-full.txt): every docs page in one Markdown file.`,
     `- [Source code](${githubUrl}): the registry and this site.`,
     "",

@@ -4,7 +4,7 @@ import { source } from "@/lib/source"
 import { docsSeo } from "@/lib/docs-seo"
 import type { DocsEntry } from "@/lib/llms"
 import { appName, githubUrl, siteUrl } from "@/lib/shared"
-import { createSeo, homeSeo } from "@/lib/seo"
+import { homeSeo } from "@/lib/seo"
 
 type DocsPage = NonNullable<ReturnType<typeof source.getPage>>
 
@@ -30,7 +30,7 @@ export function docsEntries(): DocsEntry[] {
 }
 
 export function indexablePaths(): string[] {
-  return [homeSeo.path, createSeo.path, ...docsPages().map((page) => page.url)]
+  return [homeSeo.path, ...docsPages().map((page) => page.url)]
 }
 
 export async function docsMarkdown(page: DocsPage): Promise<string> {
@@ -57,25 +57,8 @@ function homeMarkdown(): string {
     "## Links",
     "",
     `- [Docs](${siteUrl}/docs.md)`,
-    `- [Playground](${siteUrl}/create.md)`,
     `- [llms.txt](${siteUrl}/llms.txt)`,
     `- [Source code](${githubUrl})`,
-    "",
-  ].join("\n")
-}
-
-function createMarkdown(): string {
-  return [
-    "# Playground",
-    "",
-    createSeo.description,
-    "",
-    "The playground is interactive and has no Markdown equivalent. Each pair it previews:",
-    "",
-    ...PAIRS.map(
-      (pair) =>
-        `- ${pair.desktop} → ${pair.mobile}: [docs](${siteUrl}/docs/${pair.slug}.md), \`${npxCommand(pair.slug)}\``
-    ),
     "",
   ].join("\n")
 }
@@ -83,7 +66,6 @@ function createMarkdown(): string {
 // The Markdown twin of a page, or undefined when the path has none.
 export async function pageMarkdown(path: string): Promise<string | undefined> {
   if (path === homeSeo.path) return homeMarkdown()
-  if (path === createSeo.path) return createMarkdown()
   const [first, ...slugs] = path.split("/").filter(Boolean)
   if (first !== "docs") return undefined
   const page = source.getPage(slugs)

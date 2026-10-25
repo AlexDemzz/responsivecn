@@ -3,7 +3,7 @@ import { join } from "node:path"
 import { describe, expect, it } from "vitest"
 import { docsSeo } from "./docs-seo"
 import { parseFrontmatter } from "./frontmatter"
-import { createSeo, homeSeo } from "./seo"
+import { homeSeo } from "./seo"
 
 const DOCS_DIR = join(import.meta.dirname, "../../content/docs")
 
@@ -45,13 +45,13 @@ describe("docsSeo", () => {
   })
 
   it("gives every page of the site a unique title that fits a results page", () => {
-    const titles = [homeSeo, createSeo, ...docsPages].map((page) => page.title)
+    const titles = [homeSeo, ...docsPages].map((page) => page.title)
     expect(new Set(titles).size).toBe(titles.length)
     for (const title of titles) expect(title.length).toBeLessThanOrEqual(60)
   })
 
   it("gives every page a unique description that fits a results page", () => {
-    const descriptions = [homeSeo, createSeo, ...docsPages].map(
+    const descriptions = [homeSeo, ...docsPages].map(
       (page) => page.description
     )
     expect(new Set(descriptions).size).toBe(descriptions.length)

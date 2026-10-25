@@ -1,14 +1,22 @@
 import * as React from "react"
 import { createFileRoute, Link } from "@tanstack/react-router"
+import { MonitorIcon, SmartphoneIcon } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { GitHubIcon } from "@/components/github-icon"
 import { Mark } from "@/components/mark"
 import { InstallCommand } from "@/components/landing/install-command"
-import { PairStage } from "@/components/landing/pair-stage"
-import { DEFAULT_PAIR, PAIRS, npxCommand } from "@/components/create/pairs"
-import type { PairSlug } from "@/components/create/pairs"
-import type { StageMode } from "@/components/create/viewport"
+import { Playground } from "@/components/create/playground"
+import {
+  BREAKPOINT,
+  DEFAULT_PAIR,
+  DEFAULT_WIDTH,
+  PAIRS,
+  npxCommand,
+  pairByDesktop,
+} from "@/components/create/pairs"
+import type { DesktopName } from "@/components/create/pairs"
 import { appName, githubUrl } from "@/lib/shared"
 import { homeJsonLd, homeSeo, pageHead } from "@/lib/seo"
 import { cn } from "@/lib/utils"
@@ -34,6 +42,9 @@ const BASES = [
   },
 ] as const
 
+// The width the Desktop toggle sets: the smallest common laptop viewport.
+const DESKTOP_WIDTH = 1024
+
 const MIGRATION = `import {
   DialogDrawer,
   DialogDrawerContent,
@@ -48,16 +59,18 @@ const MIGRATION = `import {
 </DialogDrawer>`
 
 function Home() {
-  const [slug, setSlug] = React.useState<PairSlug>(DEFAULT_PAIR.slug)
-  const [mode, setMode] = React.useState<StageMode>("desktop")
-  const pair = PAIRS.find((item) => item.slug === slug) ?? DEFAULT_PAIR
+  const [desktop, setDesktop] = React.useState<DesktopName>(
+    DEFAULT_PAIR.desktop
+  )
+  const [width, setWidth] = React.useState(DEFAULT_WIDTH)
+  const pair = pairByDesktop(desktop)
 
   return (
     <main className="flex flex-1 flex-col px-6 pt-12 pb-12 sm:pb-24">
       <header className="mx-auto flex w-full max-w-column flex-col">
         <div className="flex items-center justify-between">
           <Mark
-            drawer={mode === "mobile"}
+            drawer={width < BREAKPOINT}
             className="size-10 [stroke-width:1.2] text-foreground"
           />
           <a
@@ -75,30 +88,34 @@ function Home() {
           makes shadcn/ui overlays responsive: a Dialog on desktop, a Drawer on
           a phone. Swap the import and keep every prop, on Base UI or Radix.
         </div>
-        <div className="mt-5 flex flex-wrap items-center gap-2">
-          <Link to="/create" className={buttonVariants({ size: "lg" })}>
-            Open the playground
-          </Link>
-          <Link
-            to="/docs/$"
-            params={{ _splat: "" }}
-            className={buttonVariants({ variant: "outline", size: "lg" })}
-          >
-            Read the docs
-          </Link>
-        </div>
+        <Link
+          to="/docs/$"
+          params={{ _splat: "" }}
+          className={buttonVariants({ size: "lg", className: "mt-5 w-fit" })}
+        >
+          Read the docs
+        </Link>
         <InstallCommand command={npxCommand(pair.slug)} className="mt-4" />
       </header>
 
       <section
-        aria-label="Live demo"
+        aria-label="Playground"
         className="mx-auto mt-8 w-full max-w-breakout"
       >
-        <PairStage
-          pair={pair}
-          onPairChange={setSlug}
-          mode={mode}
-          onModeChange={setMode}
+        <Playground
+          desktop={desktop}
+          onDesktopChange={setDesktop}
+          width={width}
+          onWidthChange={setWidth}
+          trailing={
+            <ViewportToggle
+              mobile={width < BREAKPOINT}
+              onChange={(mobile) =>
+                setWidth(mobile ? DEFAULT_WIDTH : DESKTOP_WIDTH)
+              }
+            />
+          }
+          className="h-[34rem] rounded-2xl border bg-background bg-[radial-gradient(circle_at_1px_1px,var(--color-border)_1px,transparent_0)] [background-size:20px_20px]"
         />
       </section>
 
@@ -125,11 +142,11 @@ function Home() {
           </ul>
         </Section>
 
-        <Section title="A drop-in">
+        <Section title="Drop-in replacement">
           <p className="text-pretty text-muted-foreground">
             Change the import, rename the tags, and every prop of your{" "}
-            <span className="text-foreground">Dialog</span> keeps working. The
-            mobile side follows along; tune it alone through{" "}
+            <span className="text-foreground">Dialog</span> keeps working. Props
+            both sides share reach the mobile side too; to change it alone, use{" "}
             <code className="font-mono text-sm text-foreground">drawer</code> or{" "}
             <code className="font-mono text-sm text-foreground">popover</code>.
           </p>
@@ -140,8 +157,8 @@ function Home() {
 
         <Section title="Works on Base UI and Radix">
           <p className="mb-4 text-pretty text-muted-foreground">
-            One file per pair, built on the shadcn components you installed, so
-            it takes their props and their base.
+            One file per pair, built on the shadcn components you already
+            installed, so it takes their props and runs on their base.
           </p>
           <ul>
             {BASES.map((base) => (
@@ -163,9 +180,6 @@ function Home() {
         <Link to="/docs/$" params={{ _splat: "" }} className="link-text">
           Docs
         </Link>
-        <Link to="/create" className="link-text">
-          Playground
-        </Link>
         <a
           href={githubUrl}
           target="_blank"
@@ -176,6 +190,35 @@ function Home() {
         </a>
       </footer>
     </main>
+  )
+}
+
+function ViewportToggle({
+  mobile,
+  onChange,
+}: {
+  mobile: boolean
+  onChange: (mobile: boolean) => void
+}) {
+  return (
+    <ToggleGroup
+      aria-label="Viewport"
+      value={[mobile ? "mobile" : "desktop"]}
+      onValueChange={([next]) => {
+        if (next === "desktop" || next === "mobile") onChange(next === "mobile")
+      }}
+      variant="outline"
+      size="sm"
+      spacing={0}
+      className="ms-auto"
+    >
+      <ToggleGroupItem value="desktop" aria-label="Desktop, 768px and up">
+        <MonitorIcon />
+      </ToggleGroupItem>
+      <ToggleGroupItem value="mobile" aria-label="Mobile, below 768px">
+        <SmartphoneIcon />
+      </ToggleGroupItem>
+    </ToggleGroup>
   )
 }
 

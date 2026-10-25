@@ -38,7 +38,7 @@ import type { PairSlug } from "./pairs"
 
 // Live demos wired to the REAL registry components. They render inside the
 // /preview iframe, so their use-mobile hook reads the iframe window — the
-// canvas width on /create is the viewport that decides which side renders.
+// canvas width in the playground is the viewport that decides which side renders.
 // Free-standing children (the fields) pad themselves per side: the mobile
 // Drawer doesn't pad its children while the desktop counterparts do, and
 // `md:` inside the iframe flips at the exact same 768px as the swap.
@@ -93,17 +93,17 @@ function DialogDrawerDemo({ open }: DemoProps) {
       <DialogDrawerContent
         initialFocus={load.initialFocus}
         className="sm:max-w-sm"
-        drawer={{ className: "max-w-none" }}
+        drawer={{ className: "sm:max-w-none" }}
       >
         <DialogDrawerHeader>
           <DialogDrawerTitle>Edit profile</DialogDrawerTitle>
           <DialogDrawerDescription>
-            Make changes to your profile here. Click save when you&apos;re done.
+            Make changes to your profile here, then save them.
           </DialogDrawerDescription>
         </DialogDrawerHeader>
         <div className="flex flex-col gap-4 p-4 md:p-0">
-          <Field id="name" label="Name" defaultValue="Pedro Duarte" />
-          <Field id="username" label="Username" defaultValue="@peduarte" />
+          <Field id="name" label="Name" defaultValue="Jordan Lee" />
+          <Field id="username" label="Username" defaultValue="@jordanlee" />
         </div>
         <DialogDrawerFooter>
           <DialogDrawerClose render={<Button variant="outline" />}>
@@ -129,15 +129,15 @@ function SheetDrawerDemo({ open }: DemoProps) {
         <SheetDrawerHeader>
           <SheetDrawerTitle>Edit profile</SheetDrawerTitle>
           <SheetDrawerDescription>
-            Make changes to your profile here. Click save when you&apos;re done.
+            Make changes to your profile here, then save them.
           </SheetDrawerDescription>
         </SheetDrawerHeader>
         <div className="flex flex-col gap-4 p-4 md:py-0">
-          <Field id="sheet-name" label="Name" defaultValue="Pedro Duarte" />
+          <Field id="sheet-name" label="Name" defaultValue="Jordan Lee" />
           <Field
             id="sheet-username"
             label="Username"
-            defaultValue="@peduarte"
+            defaultValue="@jordanlee"
           />
         </div>
         <SheetDrawerFooter>

@@ -17,14 +17,7 @@ export const homeSeo = {
   path: "/",
   title: "responsivecn: responsive Dialog and Drawer for shadcn/ui",
   description:
-    "shadcn/ui overlays that switch to their mobile counterpart below 768px: Dialog and Sheet to Drawer, Popover to Drawer, Tooltip to Popover. On Base UI or Radix.",
-} as const satisfies PageSeo
-
-export const createSeo = {
-  path: "/create",
-  title: "Responsive overlay playground for shadcn/ui | responsivecn",
-  description:
-    "Resize a live viewport across 768px and watch each pair swap from its desktop shadcn/ui component to its mobile one, then copy the install command.",
+    "shadcn/ui overlays that switch to their mobile counterpart below 768px: Dialog, Sheet and Popover to Drawer, Tooltip to Popover. On Base UI or Radix.",
 } as const satisfies PageSeo
 
 function normalizePath(path: string): string {
