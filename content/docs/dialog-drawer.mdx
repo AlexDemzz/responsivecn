@@ -33,18 +33,17 @@ export function EditProfile() {
       <DialogDrawerTrigger>Edit profile</DialogDrawerTrigger>
       <DialogDrawerContent
         className="sm:max-w-sm"
-        drawer={{ className: "max-w-none" }}
+        drawer={{ className: "sm:max-w-none" }}
       >
         <DialogDrawerHeader>
           <DialogDrawerTitle>Edit profile</DialogDrawerTitle>
           <DialogDrawerDescription>
-            The same children render on both sides: a Dialog at 768px and up, a
-            Drawer below.
+            Change the name shown on your profile.
           </DialogDrawerDescription>
         </DialogDrawerHeader>
         <form className="grid gap-4 p-4 md:p-0">
           <label htmlFor="name">Name</label>
-          <input id="name" defaultValue="Pedro Duarte" />
+          <input id="name" defaultValue="Jordan Lee" />
         </form>
         <DialogDrawerFooter showCloseButton />
       </DialogDrawerContent>
@@ -57,10 +56,6 @@ export function EditProfile() {
 </ComponentDemo>
 
 ## Installation
-
-<Tabs items={["Installation", "Migration"]}>
-
-<Tab value="Installation">
 
 <Steps>
 
@@ -87,49 +82,15 @@ Update the import paths to match your project setup.
 
 </Steps>
 
-</Tab>
+## Migrating
 
-<Tab value="Migration">
-
-<Steps>
-
-<Step>
-
-```bash
-npx shadcn@latest add @responsivecn/dialog-drawer
-```
-
-</Step>
-
-<Step>
-
-Replace the imports. The props are those of your shadcn Dialog, unchanged:
-
-```diff
-- import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog"
-+ import { DialogDrawer, DialogDrawerTrigger, DialogDrawerContent } from "@/components/ui/dialog-drawer"
-```
-
-</Step>
-
-<Step>
-
-Rename the tags: each part is its Dialog counterpart with a `Drawer` suffix.
-`DialogContent` becomes `DialogDrawerContent`, `DialogHeader` becomes
-`DialogDrawerHeader`, and so on. Same props, same children.
-
-Then check three things on mobile: width classes on the Content (see
+Change the imports and insert `Drawer` after `Dialog` in each part name:
+`DialogContent` becomes `DialogDrawerContent`, and so on, with the same props
+and children ([Migrating](/docs#migrating) in the Introduction). Then check
+three things below 768px: width classes on the Content (see
 [Sizing classes](#sizing-classes)), padding around the body (see
-[Body padding](#body-padding)), and the props that only apply at desktop
-(see [Desktop-only props](#desktop-only-props)).
-
-</Step>
-
-</Steps>
-
-</Tab>
-
-</Tabs>
+[Body padding](#body-padding)), and the
+[desktop-only props](#desktop-only-props).
 
 ## Usage
 
@@ -176,8 +137,8 @@ DialogDrawer
 
 ## Overriding the Drawer
 
-Everything inside `drawer={{}}` is your installed Drawer's own API, for
-example snap points on Base UI (see the Radix notes below for Vaul):
+Everything inside `drawer={{...}}` is your installed Drawer's own API, for
+example snap points on Base UI (for Vaul, see [Radix notes](#radix-notes)):
 
 ```tsx
 <DialogDrawer
@@ -196,12 +157,13 @@ example snap points on Base UI (see the Radix notes below for Vaul):
 The `className` on `DialogDrawerContent` applies to both sides. A width such
 as `sm:max-w-sm`, from the shadcn Dialog examples, starts at 640px, below the
 768px breakpoint, so it also narrows the drawer on large phones and small
-tablets. Reset it in the override, or write the width with `md:`:
+tablets. Reset it in the override with the same `sm:` prefix, since `cn` only
+replaces a class that has the same prefix, or write the width with `md:`:
 
 ```tsx
 <DialogDrawerContent
   className="sm:max-w-sm"
-  drawer={{ className: "max-w-none" }}
+  drawer={{ className: "sm:max-w-none" }}
 >
 ```
 
@@ -218,14 +180,7 @@ footer. Give the body between them its own padding below 768px:
 </DialogDrawerContent>
 ```
 
-## Open state across the breakpoint
-
-`DialogDrawer` holds the open state itself, so an uncontrolled dialog that is
-open when the window crosses 768px stays open on the other side. `open`,
-`defaultOpen` and `onOpenChange` work as they do on your Dialog. The content
-remounts on the other side, so values held inside it, such as uncontrolled
-form fields, reset: keep them in your own state or a form library if you need
-them.
+## Opening on load
 
 On the first render, before the viewport is known, the Dialog renders. A
 `defaultOpen` dialog on a phone therefore shows briefly as a Dialog before it
@@ -267,8 +222,8 @@ These props apply at 768px and up and are dropped below:
   768px, the drawer opens only from a `DialogDrawerTrigger` placed inside
   `DialogDrawer`, or from a controlled `open`.
 
-A `className` function on a part receives your Dialog's state at desktop and
-your Drawer's state below 768px.
+A `className` function on a part receives your Dialog's state at 768px and up
+and your Drawer's state below.
 
 ## Nested dialogs
 
@@ -278,8 +233,10 @@ child is open.
 
 ## API reference
 
-Each part takes every prop of its shadcn Dialog counterpart. The tables list
-only what it adds.
+Each part takes every prop of its shadcn Dialog counterpart, plus a
+`drawer` prop that takes the props of the matching Drawer part, except
+`children`: `drawer` on the Content takes your `DrawerContent` props, and so
+on. Only the parts below leave out more.
 
 ### DialogDrawer
 
@@ -299,45 +256,9 @@ state, and the detached-trigger props `handle`, `triggerId` and
 | -------- | ------------------------------------------------------------------------------- | ------- |
 | `drawer` | `Omit<ComponentProps<typeof DrawerTrigger>, "children" \| "handle" \| "payload">` | -       |
 
-### DialogDrawerContent
-
-| Prop     | Type                                                     | Default |
-| -------- | -------------------------------------------------------- | ------- |
-| `drawer` | `Omit<ComponentProps<typeof DrawerContent>, "children">` | -       |
-
-### DialogDrawerHeader
-
-| Prop     | Type                                                    | Default |
-| -------- | ------------------------------------------------------- | ------- |
-| `drawer` | `Omit<ComponentProps<typeof DrawerHeader>, "children">` | -       |
-
-### DialogDrawerFooter
-
-| Prop     | Type                                                    | Default |
-| -------- | ------------------------------------------------------- | ------- |
-| `drawer` | `Omit<ComponentProps<typeof DrawerFooter>, "children">` | -       |
-
-### DialogDrawerTitle
-
-| Prop     | Type                                                   | Default |
-| -------- | ------------------------------------------------------ | ------- |
-| `drawer` | `Omit<ComponentProps<typeof DrawerTitle>, "children">` | -       |
-
-### DialogDrawerDescription
-
-| Prop     | Type                                                         | Default |
-| -------- | ------------------------------------------------------------ | ------- |
-| `drawer` | `Omit<ComponentProps<typeof DrawerDescription>, "children">` | -       |
-
-### DialogDrawerClose
-
-| Prop     | Type                                                   | Default |
-| -------- | ------------------------------------------------------ | ------- |
-| `drawer` | `Omit<ComponentProps<typeof DrawerClose>, "children">` | -       |
-
 ## Radix notes
 
-- `drawer={{}}` is typed on Vaul: `direction`, `dismissible`, `handleOnly`,
+- `drawer={{...}}` is typed on Vaul: `direction`, `dismissible`, `handleOnly`,
   `snapPoints`, the `onDrag` and `onRelease` callbacks, and so on. Vaul's
   `onOpenChange` receives only `open`, with no reason.
 - Like Radix Dialog, the drawer moves focus inside when it opens. Pass
@@ -345,8 +266,8 @@ state, and the detached-trigger props `handle`, `triggerId` and
 - Vaul nests drawers through `Drawer.NestedRoot`, which your shadcn Drawer
   does not export: a nested `DialogDrawer` opens a second drawer on top,
   without Vaul's nested-drawer styling.
-- Vaul, the drawer library under the Radix Drawer, is no longer maintained
-  upstream. It still works; the Base UI Drawer is the maintained option.
+- Vaul, the drawer library under the Radix Drawer, is no longer maintained.
+  It still works; the Base UI Drawer is the maintained option.
 
 ## Learn more
 

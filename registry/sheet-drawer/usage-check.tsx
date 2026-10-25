@@ -131,7 +131,7 @@ export function ShadcnSheetDocsExample() {
         </SheetDrawerHeader>
         <div className="grid flex-1 auto-rows-min gap-6 px-4">
           <label htmlFor="sheet-name">Name</label>
-          <input id="sheet-name" defaultValue="Pedro Duarte" />
+          <input id="sheet-name" defaultValue="Jordan Lee" />
         </div>
         <SheetDrawerFooter>
           <Button type="submit">Save changes</Button>

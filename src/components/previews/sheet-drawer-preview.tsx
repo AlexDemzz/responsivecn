@@ -24,7 +24,7 @@ export function SheetDrawerPreview() {
           <SheetDrawerHeader>
             <SheetDrawerTitle>Workspace</SheetDrawerTitle>
             <SheetDrawerDescription>
-              Switch between your projects and settings.
+              Go to any page in this workspace.
             </SheetDrawerDescription>
           </SheetDrawerHeader>
           <nav className="grid gap-1 px-4 text-sm">

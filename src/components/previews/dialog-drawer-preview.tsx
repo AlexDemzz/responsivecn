@@ -21,13 +21,12 @@ export function DialogDrawerPreview() {
         </DialogDrawerTrigger>
         <DialogDrawerContent
           className="sm:max-w-sm"
-          drawer={{ className: "max-w-none" }}
+          drawer={{ className: "sm:max-w-none" }}
         >
           <DialogDrawerHeader>
             <DialogDrawerTitle>Edit profile</DialogDrawerTitle>
             <DialogDrawerDescription>
-              The same children render on both sides: a Dialog at 768px and up,
-              a Drawer below.
+              Change the name shown on your profile.
             </DialogDrawerDescription>
           </DialogDrawerHeader>
           <form className="grid gap-4 p-4 md:p-0">
@@ -38,7 +37,7 @@ export function DialogDrawerPreview() {
               Name
               <input
                 id="dialog-drawer-preview-name"
-                defaultValue="Pedro Duarte"
+                defaultValue="Jordan Lee"
                 className="h-9 rounded-md border border-input bg-transparent px-3 text-sm font-normal outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
               />
             </label>
@@ -48,8 +47,8 @@ export function DialogDrawerPreview() {
       </DialogDrawer>
       <p className="text-xs text-muted-foreground">
         {isMobile
-          ? "Below 768px — opens as a Drawer."
-          : "At 768px and up — opens as a Dialog."}{" "}
+          ? "Below 768px: opens as a Drawer."
+          : "At 768px and up: opens as a Dialog."}{" "}
         Resize the window across 768px while it is open: it stays open on the
         other side.
       </p>

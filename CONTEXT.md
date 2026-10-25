@@ -4,7 +4,7 @@ Glossary only. Implementation decisions live in the wayfinder map ([#1](https://
 
 ## Pair
 
-A curated desktop→mobile component combination. Exactly four exist: Dialog→Drawer, Sheet→Drawer, Popover→Drawer, Tooltip→Popover. Closed whitelist — no other combination is valid.
+A curated desktop→mobile component combination. Exactly four exist: Dialog→Drawer, Sheet→Drawer, Popover→Drawer, Tooltip→Popover. The list is closed: no other combination is valid.
 
 ## Slug
 
@@ -12,15 +12,15 @@ The kebab-case name of a pair: `<desktop>-<mobile>`, e.g. `dialog-drawer`. One s
 
 ## Responsive component
 
-The component a pair produces (e.g. `DialogDrawer`): renders the desktop component at or above the breakpoint, the mobile one below. A drop-in replacement for the desktop component — desktop props map 1:1 on the root and parts.
+The component a pair produces (e.g. `DialogDrawer`). It renders the desktop component at or above the breakpoint and the mobile one below. It is a drop-in replacement for the desktop component: desktop props map 1:1 on the root and its parts.
 
 ## Override prop
 
-The per-part prop named after the mobile side of the pair (`drawer={{...}}` on DialogDrawer, `popover={{...}}` on TooltipPopover), typed 1:1 on the user's installed mobile wrapper (`React.ComponentProps<typeof Drawer>` minus `children`, distributive so Vaul's `fadeFromIndex` union survives). `className` merges (`cn(shared, mobile)`), root state callbacks compose (shared first); other props replace. Drawer-only details (e.g. `reason === "swipe"`) are read on the override's `onOpenChange`: the shared one keeps the desktop signature.
+The prop named after the mobile side of the pair (`drawer={{...}}` on DialogDrawer, SheetDrawer and PopoverDrawer, `popover={{...}}` on TooltipPopover), on the root and on each part that has a mobile counterpart (PopoverDrawerAnchor has none). It is typed 1:1 on the user's installed mobile wrapper (`React.ComponentProps<typeof Drawer>` minus `children`, distributive so Vaul's `fadeFromIndex` union survives). `className` merges (`cn(shared, mobile)`), root state callbacks compose (shared first); other props replace. Read Drawer-only details (e.g. `reason === "swipe"`) on the override's `onOpenChange`: the shared one keeps the desktop signature.
 
 ## Breakpoint
 
-Fixed at 768px, read via the standard shadcn `useIsMobile` hook (`@/hooks/use-mobile`). Not a parameter — it briefly was one, ruled out for shadcn parity ([#6](https://github.com/AlexDemzz/responsivecn/issues/6)).
+Fixed at 768px, read via the standard shadcn `useIsMobile` hook (`@/hooks/use-mobile`). Not a parameter: it briefly was one, then was dropped for shadcn parity ([#6](https://github.com/AlexDemzz/responsivecn/issues/6)).
 
 ## Registry
 
@@ -28,7 +28,7 @@ The static shadcn registry served under `/r/` at https://responsive-cn.dev: one 
 
 ## Catalog
 
-The flattened registry index served at `/r/registry.json` — the four items without file contents. Powers `search`/`list`/MCP and the official directory listing for `@responsivecn`.
+The flattened registry index served at `/r/registry.json`: the four items without file contents. Powers `search`/`list`/MCP and the official directory listing for `@responsivecn`.
 
 ## Base-agnostic source
 

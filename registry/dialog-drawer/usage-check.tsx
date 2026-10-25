@@ -198,7 +198,7 @@ export function ShadcnDialogDocsExample() {
         <DialogDrawerTrigger {...asButton}>Open Dialog</DialogDrawerTrigger>
         <DialogDrawerContent
           className="sm:max-w-sm"
-          drawer={{ className: "max-w-none" }}
+          drawer={{ className: "sm:max-w-none" }}
         >
           <DialogDrawerHeader>
             <DialogDrawerTitle>Edit profile</DialogDrawerTitle>
@@ -209,7 +209,7 @@ export function ShadcnDialogDocsExample() {
           </DialogDrawerHeader>
           <div className="grid gap-4 p-4 md:p-0">
             <label htmlFor="dialog-name">Name</label>
-            <input id="dialog-name" defaultValue="Pedro Duarte" />
+            <input id="dialog-name" defaultValue="Jordan Lee" />
           </div>
           <DialogDrawerFooter>
             <DialogDrawerClose {...asButton}>Cancel</DialogDrawerClose>

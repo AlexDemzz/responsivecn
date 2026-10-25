@@ -33,14 +33,17 @@ import {
 
 export function ResponseRateInfo() {
   return (
-    <TooltipPopover>
-      <TooltipPopoverTrigger aria-label="About response rate">
-        <InfoIcon />
-      </TooltipPopoverTrigger>
-      <TooltipPopoverContent popover={{ className: "w-auto max-w-xs" }}>
-        The share of messages you reply to within 24 hours.
-      </TooltipPopoverContent>
-    </TooltipPopover>
+    <div>
+      Response rate: 98%
+      <TooltipPopover>
+        <TooltipPopoverTrigger aria-label="About response rate">
+          <InfoIcon />
+        </TooltipPopoverTrigger>
+        <TooltipPopoverContent popover={{ className: "w-auto max-w-xs" }}>
+          The share of messages you reply to within 24 hours.
+        </TooltipPopoverContent>
+      </TooltipPopover>
+    </div>
   )
 }
 ```
@@ -49,10 +52,6 @@ export function ResponseRateInfo() {
 </ComponentDemo>
 
 ## Installation
-
-<Tabs items={["Installation", "Migration"]}>
-
-<Tab value="Installation">
 
 <Steps>
 
@@ -79,51 +78,14 @@ Update the import paths to match your project setup.
 
 </Steps>
 
-</Tab>
+## Migrating
 
-<Tab value="Migration">
-
-<Steps>
-
-<Step>
-
-```bash
-npx shadcn@latest add @responsivecn/tooltip-popover
-```
-
-</Step>
-
-<Step>
-
-Replace the imports. The props are those of your shadcn Tooltip, unchanged:
-
-```diff
-- import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-+ import { TooltipPopover, TooltipPopoverContent, TooltipPopoverTrigger } from "@/components/ui/tooltip-popover"
-```
-
-</Step>
-
-<Step>
-
-Rename the tags: `Tooltip` becomes `TooltipPopover`, `TooltipTrigger`
-becomes `TooltipPopoverTrigger`, `TooltipContent` becomes
-`TooltipPopoverContent`. Same props, same children.
-
-</Step>
-
-<Step>
-
-Leave `TooltipProvider` as it is, imported from `@/components/ui/tooltip` at
-the root of your app. It has no `TooltipPopover` counterpart.
-
-</Step>
-
-</Steps>
-
-</Tab>
-
-</Tabs>
+Change the imports and rename the tags: `Tooltip` becomes `TooltipPopover`,
+`TooltipTrigger` becomes `TooltipPopoverTrigger`, `TooltipContent` becomes
+`TooltipPopoverContent`, with the same props and children
+([Migrating](/docs#migrating) in the Introduction). Leave `TooltipProvider` as
+it is, imported from `@/components/ui/tooltip` at the root of your app: it has
+no `TooltipPopover` counterpart.
 
 ## Usage
 
@@ -167,15 +129,11 @@ Tooltip. On Radix it is required: the desktop Tooltip throws without it. On
 Base UI it is optional and groups tooltip delays. It renders no element, so it
 does not affect the Popover below 768px.
 
-## Open state across the breakpoint
+## The trigger across the breakpoint
 
-`TooltipPopover` holds the open state itself, so a tooltip that is open when
-the window crosses 768px stays open on the other side. `open`, `defaultOpen`
-and `onOpenChange` work as they do on your Tooltip.
-
-The trigger is a different component on each side, so it remounts on a
-crossing, and once after hydration on a small screen. Keep its children
-stateless.
+The trigger is a different component on each side, so it remounts when the
+window crosses 768px, and once after hydration on a small screen. Keep its
+children stateless.
 
 ## The content box
 
@@ -189,16 +147,17 @@ own, as everywhere in responsivecn:
 - **Offset (Radix):** with no `sideOffset`, the Tooltip sits at `0` and the
   Popover at `4`.
 
-Set the prop on the Content for both sides, or in `popover={{}}` for the
+Set the prop on the Content for both sides, or in `popover={{...}}` for the
 Popover only. For a one-line tip, size the Popover to its text:
 
 ```tsx
 <TooltipPopoverContent popover={{ className: "w-auto max-w-xs", side: "top" }}>
 ```
 
-## The override prop is `popover={{}}`
+## Overriding the Popover
 
-The override prop is named after the mobile side, here the Popover:
+Everything inside `popover={{...}}` is your installed Popover's own API, on the
+root, the Trigger and the Content:
 
 ```tsx
 <TooltipPopover popover={{ modal: true }}>
@@ -219,8 +178,8 @@ the name for the override, so the native attribute cannot be passed through.
 ## Disabled
 
 On Base UI, `disabled` on `TooltipPopover` or on `TooltipPopoverTrigger`
-keeps the tip closed and leaves the trigger usable. Below 768px it keeps the
-Popover closed the same way: the trigger button is not disabled.
+keeps the tip closed and leaves the trigger usable. Below 768px it does the
+same: the Popover stays closed and the trigger button stays enabled.
 
 ## Trigger elements
 
@@ -229,31 +188,36 @@ On Base UI, a trigger rendered as another element (`render={<span />}`,
 that renders something other than a `<button>`, pass
 `popover={{ nativeButton: false }}` on the Trigger.
 
-## onOpenChange below 768px
+## `onOpenChange`
 
-The shared `onOpenChange` is typed from your Tooltip. Below 768px it receives
-the Popover's values, so on Base UI `eventDetails.reason` can be a
-Popover-only reason such as `"close-press"` or `"focus-out"`, and a
-`className` or `render` function receives the Popover's state. Do not switch
-exhaustively on the Tooltip's reasons; use `popover={{ onOpenChange }}` for
-logic that needs the Popover's details.
+`onOpenChange` on the root has your Tooltip's signature and also fires below
+768px. There it receives the Popover's values, so on Base UI
+`eventDetails.reason` can be a reason only the Popover has, such as
+`"close-press"` or `"focus-out"`. Do not switch exhaustively on the Tooltip's
+reasons. For logic that needs the Popover's details, use
+`popover={{ onOpenChange }}`, which runs after the shared handler.
 
-## Props not carried over
+A `className` or `render` function on a part receives your Tooltip's state at
+768px and up and your Popover's state below.
+
+## Desktop-only props
+
+These props apply at 768px and up and are dropped below:
 
 - **Detached triggers on Base UI:** `handle`, `triggerId` and
-  `defaultTriggerId` on the root, `handle` and `payload` on the Trigger. They
-  work at 768px and up. A Tooltip handle cannot open a Popover, so below
-  768px the popover opens only from a `TooltipPopoverTrigger` placed inside
-  `TooltipPopover`.
+  `defaultTriggerId` on the root, `handle` and `payload` on the Trigger. A
+  Tooltip handle cannot open a Popover, so below 768px the popover opens only
+  from a `TooltipPopoverTrigger` placed inside `TooltipPopover`, or from a
+  controlled `open`.
 - **Hover and cursor props:** `delay`, `closeDelay`, `closeOnClick`,
   `trackCursorAxis`, `disableHoverablePopup` on Base UI, and
-  `delayDuration`, `disableHoverableContent` on Radix, apply at 768px and up
-  only.
+  `delayDuration`, `disableHoverableContent` on Radix. A tap has no hover to
+  delay or track.
 
 ## Accessibility
 
-Give an icon-only trigger an `aria-label` that matches the content. Below
-768px nothing opens until the trigger is pressed, so the label is all a
+Give an icon-only trigger an `aria-label` that names what the tip explains.
+Below 768px nothing opens until the trigger is pressed, so the label is all a
 screen reader gets up front:
 
 ```tsx
@@ -267,8 +231,10 @@ desktop Tooltip.
 
 ## API reference
 
-Each part takes every prop of its shadcn Tooltip counterpart. The tables list
-only what it adds.
+Each part takes every prop of its shadcn Tooltip counterpart, plus a
+`popover` prop that takes the props of the matching Popover part, except
+`children`: `popover` on the Content takes your `PopoverContent` props, and so
+on. Only the parts below leave out more.
 
 ### TooltipPopover
 
@@ -287,20 +253,14 @@ state, and the detached-trigger props `handle`, `triggerId` and
 | --------- | ---------------------------------------------------------------------------------- | ------- |
 | `popover` | `Omit<ComponentProps<typeof PopoverTrigger>, "children" \| "handle" \| "payload">` | -       |
 
-### TooltipPopoverContent
-
-| Prop      | Type                                                      | Default |
-| --------- | --------------------------------------------------------- | ------- |
-| `popover` | `Omit<ComponentProps<typeof PopoverContent>, "children">` | -       |
-
 ## Radix notes
 
 - `TooltipProvider` at the app root is required.
 - A Radix tooltip does not open on touch, and a tap closes an open one. The
   Popover below 768px fixes that.
 - The Radix Popover trigger opens on click only: `openOnHover` does not exist
-  in `popover={{}}`.
-- `disabled` on `TooltipPopoverTrigger` disables the button at desktop. Below
+  in `popover={{...}}`.
+- `disabled` on `TooltipPopoverTrigger` disables the button at 768px and up. Below
   768px it keeps the Popover closed and leaves the button enabled.
 
 ## Learn more

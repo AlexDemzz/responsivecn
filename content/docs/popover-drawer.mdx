@@ -58,10 +58,6 @@ export function Dimensions() {
 
 ## Installation
 
-<Tabs items={["Installation", "Migration"]}>
-
-<Tab value="Installation">
-
 <Steps>
 
 <Step>
@@ -87,44 +83,14 @@ Update the import paths to match your project setup.
 
 </Steps>
 
-</Tab>
+## Migrating
 
-<Tab value="Migration">
-
-<Steps>
-
-<Step>
-
-```bash
-npx shadcn@latest add @responsivecn/popover-drawer
-```
-
-</Step>
-
-<Step>
-
-Replace the imports. The props are those of your shadcn Popover, unchanged:
-
-```diff
-- import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-+ import { PopoverDrawer, PopoverDrawerContent, PopoverDrawerTrigger } from "@/components/ui/popover-drawer"
-```
-
-</Step>
-
-<Step>
-
-Rename the tags: each part is its Popover counterpart with a `Drawer` suffix.
-`PopoverContent` becomes `PopoverDrawerContent`, `PopoverAnchor` becomes
-`PopoverDrawerAnchor`, and so on. Same props, same children.
-
-</Step>
-
-</Steps>
-
-</Tab>
-
-</Tabs>
+Change the imports and insert `Drawer` after `Popover` in each part name:
+`PopoverContent` becomes `PopoverDrawerContent`, and so on, with the same
+props and children ([Migrating](/docs#migrating) in the Introduction). Then
+check two things below 768px: the
+[desktop-only props](#desktop-only-props), and a title on every content (see
+[Accessibility](#accessibility)).
 
 ## Usage
 
@@ -180,30 +146,22 @@ drawer, instead of shrinking the drawer to a 320px panel.
 `PopoverDrawerHeader` and `PopoverDrawerFooter` take their spacing from that
 box, as they do in the Popover.
 
-## Open state across the breakpoint
-
-`PopoverDrawer` holds the open state itself, so an uncontrolled popover that
-is open when the window crosses 768px stays open on the other side. `open`,
-`defaultOpen` and `onOpenChange` work as they do on your Popover. Form values
-held inside the content still reset: lift them into your own state if you
-need to keep them.
-
 ## The `modal` default
 
 A Popover is non-modal by default; a Drawer is modal. With no `modal` prop,
 each side keeps its own default: an anchored popover that closes on an outside
-click at desktop, a drawer with an overlay below 768px. Set `modal` to apply
+click at 768px and up, a drawer with an overlay below. Set `modal` to apply
 it to both sides, or `drawer={{ modal }}` to change only the drawer:
 
 ```tsx
 <PopoverDrawer drawer={{ modal: false }}>
 ```
 
-## The Footer part
+## The footer part
 
-The shadcn Popover has no footer, but a drawer needs an action row.
-`PopoverDrawerFooter` is optional: a `flex justify-end gap-2` row at desktop,
-your `DrawerFooter` below 768px.
+The shadcn Popover has no footer, but a drawer often needs an action row.
+`PopoverDrawerFooter` is optional: a `flex justify-end gap-2` row at 768px
+and up, your `DrawerFooter` below.
 
 To close from a button inside the content, control `open`, as you would with
 the Popover:
@@ -236,9 +194,9 @@ no equivalent:
 - **Detached triggers on Base UI:** `handle`, `triggerId` and
   `defaultTriggerId` on the root, `handle` and `payload` on the Trigger. Below
   768px, the drawer opens only from a `PopoverDrawerTrigger` placed inside
-  `PopoverDrawer`.
+  `PopoverDrawer`, or from a controlled `open`.
 - **Anchoring on Radix:** `PopoverDrawerAnchor` renders your `PopoverAnchor`
-  at desktop. Below 768px it renders its child (with `asChild`) or a plain
+  at 768px and up. Below 768px it renders its child (with `asChild`) or a plain
   `div`.
 
 ## Accessibility
@@ -253,8 +211,10 @@ design has no heading.
 
 ## API reference
 
-Each part takes every prop of its shadcn Popover counterpart. The tables list
-only what it adds.
+Each part takes every prop of its shadcn Popover counterpart, plus a
+`drawer` prop that takes the props of the matching Drawer part, except
+`children`: `drawer` on the Content takes your `DrawerContent` props, and so
+on. Only the parts below leave out more.
 
 ### PopoverDrawer
 
@@ -274,37 +234,10 @@ state, and the detached-trigger props `handle`, `triggerId` and
 | -------- | --------------------------------------------------------------------------------- | ------- |
 | `drawer` | `Omit<ComponentProps<typeof DrawerTrigger>, "children" \| "handle" \| "payload">` | -       |
 
-### PopoverDrawerContent
-
-| Prop     | Type                                                     | Default |
-| -------- | -------------------------------------------------------- | ------- |
-| `drawer` | `Omit<ComponentProps<typeof DrawerContent>, "children">` | -       |
-
-### PopoverDrawerHeader
-
-| Prop     | Type                                                    | Default |
-| -------- | ------------------------------------------------------- | ------- |
-| `drawer` | `Omit<ComponentProps<typeof DrawerHeader>, "children">` | -       |
-
-### PopoverDrawerTitle
-
-| Prop     | Type                                                   | Default |
-| -------- | ------------------------------------------------------ | ------- |
-| `drawer` | `Omit<ComponentProps<typeof DrawerTitle>, "children">` | -       |
-
-### PopoverDrawerDescription
-
-| Prop     | Type                                                         | Default |
-| -------- | ------------------------------------------------------------ | ------- |
-| `drawer` | `Omit<ComponentProps<typeof DrawerDescription>, "children">` | -       |
-
 ### PopoverDrawerFooter
 
-Takes every prop of a `div`.
-
-| Prop     | Type                                                    | Default |
-| -------- | ------------------------------------------------------- | ------- |
-| `drawer` | `Omit<ComponentProps<typeof DrawerFooter>, "children">` | -       |
+Takes every prop of a `div`, plus `drawer` with your `DrawerFooter`
+props, except `children`.
 
 ### PopoverDrawerAnchor
 
@@ -312,14 +245,14 @@ Radix only. Takes every prop of your `PopoverAnchor` and adds none.
 
 ## Radix notes
 
-- `drawer={{}}` is typed on Vaul: `direction`, `dismissible`, `snapPoints`,
+- `drawer={{...}}` is typed on Vaul: `direction`, `dismissible`, `snapPoints`,
   and so on.
 - Like Radix Popover, the drawer moves focus inside when it opens. Pass
   `drawer={{ autoFocus: false }}` to keep Vaul's own default.
 - A non-modal Vaul drawer stays open when you tap outside it, unlike the
   non-modal Popover. Control `open` to close it from inside.
-- Vaul, the drawer library under the Radix Drawer, is no longer maintained
-  upstream. It still works; the Base UI Drawer is the maintained option.
+- Vaul, the drawer library under the Radix Drawer, is no longer maintained.
+  It still works; the Base UI Drawer is the maintained option.
 
 ## Learn more
 

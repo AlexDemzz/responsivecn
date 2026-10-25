@@ -56,8 +56,8 @@ export function PopoverDrawerPreview() {
       </PopoverDrawer>
       <p className="text-xs text-muted-foreground">
         {isMobile
-          ? "Below 768px — opens as a modal Drawer."
-          : "At 768px and up — opens as a non-modal anchored Popover."}{" "}
+          ? "Below 768px: a modal Drawer."
+          : "At 768px and up: a non-modal Popover anchored to the button."}{" "}
         Resize the window across 768px while it is open: it stays open on the
         other side.
       </p>
